@@ -3,5 +3,6 @@
     $usuario = "root";          
     $senha = "";
     $dbname = "doorsense";
-    $conn = mysqli_connect($servidor, $usuario, $senha, $dbname);   //string de conexão
+    
+    $conn = mysqli_connect($servidor, $usuario, $senha, $dbname);
 ?>

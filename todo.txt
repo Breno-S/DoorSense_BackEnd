@@ -1,0 +1,3 @@
+Usar msqli orientado a objetos para preparar as strings de consulta
+
+Arrumar a estrutura das pastas (separar os controllers)
