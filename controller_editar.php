@@ -2,8 +2,10 @@
 session_start();
 include_once('conexao.php');
 
+var_dump($_POST);
+
 if (isset($_POST['id_sala'])) {
-    $id_sala = $_POST['id_sala'];
+    $id_sala = $_SESSION['sala'];
 
     // Verificar se o usuário está logado
     if (!isset($_SESSION['ID_ADMIN'])) {
@@ -24,7 +26,7 @@ if (isset($_POST['id_sala'])) {
 
     if (mysqli_num_rows($resultadoVerificacao) > 0) {
         $_SESSION['msg'] = "<p class='text-center' style='color: red;'>Já existe uma sala com o mesmo nome ou número.</p>";
-        header('Location: ./home.php');
+        //header('Location: ./home.php');
         exit();
     } else {
         // Atualizar as informações no banco
@@ -35,11 +37,11 @@ if (isset($_POST['id_sala'])) {
 
         if ($resultadoAtualizacao) {
             $_SESSION['msg'] = "<p class='text-center' style='color: green;'>Sala atualizada com sucesso!</p>";
-            header('Location: ./home.php');
+           // header('Location: ./home.php');
             exit();
         } else {
             $_SESSION['msg'] = "<p class='text-center' style='color: red;'>Erro ao atualizar sala.</p>";
-            header('Location: ./home.php');
+           // header('Location: ./home.php');
             exit();
         }
     }

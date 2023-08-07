@@ -41,6 +41,7 @@
                 // Adicionar o botão de exclusão
                 echo '<form method="post" action="controller_excluir.php">';
                 echo '<input type="hidden" name="id_sala" value="' . $row['ID_SALA'] . '">';
+                $_SESSION['sala'] = $row['ID_SALA'];
                 echo '<input type="submit" value="Excluir">';
                 echo '</form>';
 
@@ -139,7 +140,11 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <input type="hidden" name="id_sala" value="<?php' . $row['ID_SALA'] . '?>">
+                
+                  
+                
+               
+                
                 <input type="submit" value="Okay" id="editarSalaBtn">
             </div>
             </form>
