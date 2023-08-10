@@ -2,7 +2,7 @@
         session_start();
         include_once('conexao.php');
           
-       
+        $tabela = [];
 
         // Verificar se o usuário está logado
         if (!isset($_SESSION['ID_ADMIN'])) {
@@ -11,8 +11,8 @@
         }
 
         $id = $_SESSION['ID_ADMIN'];
-
-        $sql = "SELECT * FROM sala";
+        $id_sala = $_POST['id_sala'];
+        $sql = "SELECT * FROM sala ";
         $result = mysqli_query($conn, $sql);
 
         if (mysqli_num_rows($result) > 0) {
@@ -35,6 +35,7 @@
 
             // Loop para exibir informações sobre as salas
             while ($row = mysqli_fetch_assoc($result)) {
+                $tabela[$row['ID_SALA']] = $row;
                 echo '<div>';
                 echo '<h2>ID: ' . $row['ID_SALA'] . ' / NOME: ' . $row['NOME_SALA'] . ' / NUMERO: ' . $row['NUMERO_SALA'] . ' / STATUS: ' . $row['STATUS_SALA'] . '</h2>';
                 
@@ -44,9 +45,7 @@
                 $_SESSION['sala'] = $row['ID_SALA'];
                 echo '<input type="submit" value="Excluir">';
                 echo '</form>';
-
-                echo'<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#criarSalaModal">Criar Sala</button>';
-
+                //Adicionar o botão de 
                 echo'<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editarSalaModal">Editar Sala</button>';
                 
                 echo '</div><br>';
@@ -59,12 +58,13 @@
         }
 
         mysqli_close($conn);
+        print_r($tabela);
     ?>
 <!DOCTYPE html>
 <html>
 <head>
     <title>Salas</title>
-    <!-- Adicione essas linhas no cabeçalho do seu HTML -->
+    <header><?php echo'<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#criarSalaModal">Criar Sala</button>';?></header>
 
     <!-- Importação do CSS do Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -78,41 +78,38 @@
 <body>
 
 <!-- Modal de Criação de Sala -->
-<div class="modal fade" id="editarSalaModal" tabindex="-1" role="dialog" aria-labelledby="editarSalaModalLabel" aria-hidden="true">
+<div class="modal fade" id="criarSalaModal" tabindex="-1" role="dialog" aria-labelledby="criarSalaModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form id="editarSalaForm" action="controller_editar.php" method="post">
+            <form id="criarSalaForm" action="controller_criar.php" method="post">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editarSalaModalLabel">Editar Sala</h5>
+                    <h5 class="modal-title" id="criarSalaModalLabel">Criar Sala</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" name="id_sala" id="idSala">
-                    <label for="nomeSala">Nome da Sala:</label>
-                    <input type="text" id="nomeSala" name="nomeSala" class="form-control">
-                    <label for="numeroSala">Número da Sala:</label>
-                    <input type="number" id="numeroSala" name="numeroSala" class="form-control">
+                    <label for="nomeSalaCriar">Nome da Sala:</label>
+                    <input type="text" id="nomeSalaCriar" name="nomeSalaCriar" class="form-control">
+                    <label for="numeroSalaCriar">Número da Sala:</label>
+                    <input type="number" id="numeroSalaCriar" name="numeroSalaCriar" class="form-control">
                     <div class="form-check">
-                        <input type="radio" id="statusAtivo" name="statusSala" class="form-check-input" value="Ativo">
-                        <label class="form-check-label" for="statusAtivo">Ativo</label>
+                        <input type="radio" id="statusAtivoCriar" name="statusSalaCriar" class="form-check-input" value="Ativo">
+                        <label class="form-check-label" for="statusAtivoCriar">Ativo</label>
                     </div>
                     <div class="form-check">
-                        <input type="radio" id="statusInativo" name="statusSala" class="form-check-input" value="Inativo">
-                        <label class="form-check-label" for="statusInativo">Inativo</label>
+                        <input type="radio" id="statusInativoCriar" name="statusSalaCriar" class="form-check-input" value="Inativo">
+                        <label class="form-check-label" for="statusInativoCriar">Inativo</label>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Atualizar</button>
+                    <button type="submit" class="btn btn-primary">Criar</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-
 
     <!-- Modal de Edição de Sala -->
     <div class="modal fade" id="editarSalaModal" tabindex="-1" role="dialog" aria-labelledby="editarSalaModalLabel" aria-hidden="true">
@@ -128,11 +125,11 @@
                 <form action="./controller_editar.php" method="post">
                     <div class="modal-body">
                         <label for="nomeSala">Nome da Sala:</label>
-                        <input type="text" id="nomeSala" class="form-control">
+                        <input type="text" id="nomeSala" value="<?php $tabela[$row['NOME_SALA']] ?>" class="form-control">
                         <label for="numeroSala">Número da Sala:</label>
-                        <input type="number" id="numeroSala" class="form-control">
+                        <input type="number" id="numeroSala" value="<?php $tabela[$row['NUMERO_SALA']] ?>" class="form-control">
                         <label for="statusSala">Status da Sala:</label>
-                        <select name="statusSala" id="status" class="form-control required">
+                        <select name="statusSala" id="status" value="<?php $tabela[$row['STATUS_SALA']] ?>" class="form-control required">
                             <option value="status">Ativo</option>
                             <option value="status">Inativo</option>
                         </select>
@@ -140,12 +137,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                
-                  
-                
-               
-                
                 <input type="submit" value="Okay" id="editarSalaBtn">
+
             </div>
             </form>
         </div>
