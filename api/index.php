@@ -13,11 +13,16 @@ $response = [];
 // Verifique o método da requisição
 $method = $_SERVER['REQUEST_METHOD'];
 
-if ($_REQUEST == 'GET') {
+if ($method == 'GET') {
     if (isset($_GET['id'])) {
         
     }
-} elseif ()
+} elseif ($method == 'POST') {
+    if (isset($_GET['id'])) {
+        
+    }
+
+} elseif ($method == 'PUT') {
 
 
 // Resposta
@@ -25,7 +30,3 @@ answer($response);
 
 exit;
 
-function answer($data) {
-    header("Content-Type: application/json");
-    echo json_encode($data);
-}

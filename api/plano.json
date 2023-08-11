@@ -1,0 +1,56 @@
+{
+    "login": {
+        "endpoint": ".../api/login",
+        "método": "POST",
+        "body": {
+            "login": "string",
+            "senha": "string"
+        }
+    },
+
+    "create-sala": {
+        "endpoint": ".../api/salas",
+        "método": "POST",    
+        "body": {
+            "nome_da_sala": "string",
+            "numero_da_sala": "int",
+            "frase_da_sala": "string"
+        }
+    },
+
+    "read-sala": {
+        "endpoint": ".../api/salas",
+        "método": "GET",
+        "body": {
+            "id": "int"
+        }
+    },
+
+    "update-sala": {
+        "endpoint": ".../api/salas",
+        "método": "PUT",
+        "body": {
+            "id": "int",
+            "nome_da_sala": "string",
+            "numero_da_sala": "int",
+            "frase_da_sala": "string",
+            "ativo": "boolean"
+        }
+    },
+
+    "delete-sala" : {
+        "endpoint": ".../api/salas",
+         "método": "DELETE",
+         "body": {
+            "id" : "int"
+         }
+    },
+
+    "": {
+
+    }
+}
+
+
+// GET = parâmetros enviados direto na URL
+// POST = parâmetros enviados no 'body' da requisição
