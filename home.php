@@ -11,7 +11,6 @@
         }
 
         $id = $_SESSION['ID_ADMIN'];
-        $id_sala = $_POST['id_sala'];
         $sql = "SELECT * FROM sala ";
         $result = mysqli_query($conn, $sql);
 

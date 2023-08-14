@@ -2,7 +2,7 @@
 session_start();
 include_once('conexao.php');
 
-var_dump($_POST);
+
 
 if (isset($_POST['id_sala'])) {
     $id_sala = $_SESSION['sala'];
