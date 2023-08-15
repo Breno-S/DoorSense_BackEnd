@@ -1,6 +1,6 @@
 <?php
-include_once '../include/conexao.php';
-include_once '../include/funcoes.php';
+include_once '../../include/conexao.php';
+include_once '../../include/funcoes.php';
 
 // Headers
 header("Access-Control-Allow-Origin: *");
@@ -14,21 +14,22 @@ $response = [];
 // Verifique o método da requisição
 $method = $_SERVER['REQUEST_METHOD'];
 
-if ($method == 'GET') {
+if ($method == 'POST') {
     $json_data = file_get_contents('php://input');
     $data = json_decode($json_data, true);
 
-    if (isset($data['id'])) {
-        $id = intval($data['id']);
+    if ( (isset($data['nome'])) && (isset($data['numero'])) ) {
+        $nome_sala = $data['nome'];
+        $numero_sala = intval($data['numero']);
 
-        if ($sala = get_sala($conn, $id)) {
+        if ($nova_sala = create_sala($conn, $nome_sala, $numero_sala)) {
                 $response['status'] = "200 OK";
-                $response['message'] = "Sala encontrada";
+                $response['message'] = "Sala adicionada com sucesso";
                 $response['data'] = [
-                    "id" => $sala['ID_SALA'],
-                    "nome" => $sala['NOME_SALA'],
-                    "numero" => $sala['NUMERO_SALA'],
-                    "status" => $sala['STATUS_SALA']
+                    "id" => $nova_sala['ID_SALA'],
+                    "nome" => $nova_sala['NOME_SALA'],
+                    "numero" => $nova_sala['NUMERO_SALA'],
+                    "status" => $nova_sala['STATUS_SALA']
                 ];
         } else {
             $response['status'] = "401 Unauthorized";

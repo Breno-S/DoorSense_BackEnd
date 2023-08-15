@@ -1,47 +1,50 @@
 {
     "login": {
-        "endpoint": ".../api/login",
+        "endpoint": ".../api/login/",
         "método": "POST",
-        "body": {
+        "autenticação": "",
+        "params": {
             "login": "string",
             "senha": "string"
         }
     },
 
     "create-sala": {
-        "endpoint": ".../api/salas",
+        "endpoint": ".../api/salas/create/",
         "método": "POST",    
-        "body": {
-            "nome_da_sala": "string",
-            "numero_da_sala": "int",
-            "frase_da_sala": "string"
+        "autenticação": "",
+        "params": {
+            "nome": "string",
+            "numero": "int",
         }
     },
 
     "read-sala": {
-        "endpoint": ".../api/salas",
+        "endpoint": ".../api/salas/",
         "método": "GET",
-        "body": {
+        "autenticação": "",
+        "params": {
             "id": "int"
         }
     },
 
     "update-sala": {
-        "endpoint": ".../api/salas",
+        "endpoint": ".../api/salas/update/",
         "método": "PUT",
-        "body": {
+        "autenticação": "",
+        "params": {
             "id": "int",
             "nome_da_sala": "string",
             "numero_da_sala": "int",
-            "frase_da_sala": "string",
             "ativo": "boolean"
         }
     },
 
     "delete-sala" : {
-        "endpoint": ".../api/salas",
+        "endpoint": ".../api/salas/delete-sala",
          "método": "DELETE",
-         "body": {
+         "autenticação": "",
+         "params": {
             "id" : "int"
          }
     },
@@ -50,7 +53,3 @@
 
     }
 }
-
-
-// GET = parâmetros enviados direto na URL
-// POST = parâmetros enviados no 'body' da requisição
