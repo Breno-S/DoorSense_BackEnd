@@ -18,10 +18,10 @@ if ($method == 'GET') {
     $json_data = file_get_contents('php://input');
     $data = json_decode($json_data, true);
 
-    if (isset($data['id'])) {
-        $id = intval($data['id']);
-
-        if ($sala = get_sala($conn, $id)) {
+    if (!empty($data)) {
+        if (isset($data['id'])) {
+            $id = intval($data['id']);
+            if ($sala = get_sala($conn, $id)) {
                 $response['status'] = "200 OK";
                 $response['message'] = "Sala encontrada";
                 $response['data'] = [
@@ -30,13 +30,25 @@ if ($method == 'GET') {
                     "numero" => $sala['NUMERO_SALA'],
                     "status" => $sala['STATUS_SALA']
                 ];
+            } else {
+                $response['status'] = "400 Bad Request";
+                $response['message'] = "Parâmetros inválidos";
+            }
         } else {
-            $response['status'] = "401 Unauthorized";
-            $response['message'] = "Credenciais inválidas";
+            $response['status'] = "400 Bad Request";
+            $response['message'] = "Parâmetros inválidos";
         }
     } else {
-        $response['status'] = "400 Bad Request";
-        $response['message'] = "Parâmetros inválidos";
+        if ($all_salas = get_all_salas($conn)) {
+            $response['status'] = "200 OK";
+            $response['message'] = "Todas as salas registradas";
+
+            $response['data'] = [];
+
+            foreach ($all_salas as $indice => $dados_sala) {
+                array_push($response['data'], $dados_sala);
+            }
+        }
     }
 } else {
     http_response_code(400);
