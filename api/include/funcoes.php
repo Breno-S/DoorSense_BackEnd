@@ -5,8 +5,6 @@ function answer($response) {
     echo json_encode($response);
 }
 
-/*****************************************************************************/
-
 function login($conn, $username, $password) {
     // String de consulta
     $sql = "SELECT * FROM admin WHERE EMAIL_ADMIN = ? AND SENHA_ADMIN = ?";
@@ -27,8 +25,6 @@ function login($conn, $username, $password) {
 
     return false;
 }
-
-/*****************************************************************************/
 
 function get_sala($conn, $id) {
     // String de consulta
@@ -53,15 +49,16 @@ function get_sala($conn, $id) {
     return false;
 }
 
-/*****************************************************************************/
-
 function get_all_salas($conn) {
     // String de consulta
     $sql = "SELECT * FROM sala";
 
     // Execução da consulta
     if ($result = mysqli_query($conn, $sql)) {
-        $result_set = [];
+        
+        // Execução da consulta
+        if ($result = mysqli_query($conn, $sql)) {
+            $result_set = [];
             
         // Agrupar os resultados
         while ($row = mysqli_fetch_assoc($result)) {
@@ -75,40 +72,20 @@ function get_all_salas($conn) {
             $result_set[] = $new_row;
         }
         
-        // // String de consulta
-        // $sql = "SELECT COUNT(*) AS total FROM sala";
+        // String de consulta
+        $sql = "SELECT COUNT(*) AS total FROM sala";
         
-        // // Execução da consulta
-        // if ($result = mysqli_query($conn, $sql)) {
-        //     $total_salas = mysqli_fetch_assoc($result);
-        //     array_unshift($result_set, $total_salas);
-        // }
+        // Execução da consulta
+        if ($result = mysqli_query($conn, $sql)) 
+            $total_salas = mysqli_fetch_assoc($result);
+            array_unshift($result_set, $total_salas);
+        }
 
         return $result_set;
     }
 
     return false;
 }
-
-/*****************************************************************************/
-
-function get_total_salas($conn) {
-    // String de consulta
-    $sql = "SELECT COUNT(*) AS total FROM sala";
-        
-    // Execução da consulta
-    if ($result = mysqli_query($conn, $sql)) {
-        $row = mysqli_fetch_assoc($result);
-        $total = $row['total'];
-
-        return $total;
-    }
-
-    return false;
-    
-}
-
-/*****************************************************************************/
 
 function create_sala($conn, $nome_sala, $numero_sala) {
     // String de consulta
@@ -130,11 +107,59 @@ function create_sala($conn, $nome_sala, $numero_sala) {
 
         return $row;
     }
-
-    return false;
 }
 
-/*****************************************************************************/
+    function delete_sala($conn, $id_sala) {
+        // String de consulta
+        $sql = "DELETE FROM sala WHERE ID_SALA = ?";
+    
+        // Preparação da consulta
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, 'i', $id_sala);
+    
+        // Execução da consulta
+
+        if (mysqli_stmt_execute($stmt)) {
+            $rows_affected = mysqli_affected_rows($conn);
+    
+            if ($rows_affected > 0) {
+                return true; // Registro deletado com sucesso
+            } else {
+                return false; // Nenhum registro encontrado com o ID fornecido
+            }
+        } else {
+            return false; // Erro ao deletar registro
+        }
+    
+}
+
+function update_sala($conn, $id_sala, $nomeSala, $numeroSala, $statusSala) {
+    // Verificar se já existe uma sala com o mesmo nome ou número
+    $verificarSala = "SELECT * FROM sala WHERE (NOME_SALA = ? OR NUMERO_SALA = ?) AND ID_SALA != ?";
+    $stmtVerificacao = mysqli_prepare($conn, $verificarSala);
+    mysqli_stmt_bind_param($stmtVerificacao, "ssi", $nomeSala, $numeroSala, $id_sala);
+    mysqli_stmt_execute($stmtVerificacao);
+    $resultadoVerificacao = mysqli_stmt_get_result($stmtVerificacao);
+
+    if (mysqli_num_rows($resultadoVerificacao) > 0) {
+        return false; // Já existe uma sala com o mesmo nome ou número
+    } else {
+        // Atualizar as informações no banco
+        $atualizarSala = "UPDATE sala SET NOME_SALA = ?, NUMERO_SALA = ?, STATUS_SALA = ? WHERE ID_SALA = ?";
+        $stmtAtualizacao = mysqli_prepare($conn, $atualizarSala);
+        mysqli_stmt_bind_param($stmtAtualizacao, "sssi", $nomeSala, $numeroSala, $statusSala, $id_sala);
+        $resultadoAtualizacao = mysqli_stmt_execute($stmtAtualizacao);
+
+        if ($resultadoAtualizacao) {
+            return true; // Sala atualizada com sucesso
+        } else {
+            return false; // Erro ao atualizar sala
+        }
+    }
+}
+
+
+
 
 
 ?>

@@ -43,15 +43,10 @@ if ($method == 'GET') {
             $response['status'] = "200 OK";
             $response['message'] = "Todas as salas registradas";
 
-            $total = get_total_salas($conn);
-
-            $response['data'] = [
-                "total" => $total,
-                "salas" => []
-            ];
+            $response['data'] = [];
 
             foreach ($all_salas as $indice => $dados_sala) {
-                array_push($response['data']['salas'], $dados_sala);
+                array_push($response['data'], $dados_sala);
             }
         }
     }
