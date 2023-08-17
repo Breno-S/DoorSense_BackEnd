@@ -135,19 +135,17 @@ function create_sala($conn, $nome_sala, $numero_sala) {
 
 function update_sala($conn, $id_sala, $nomeSala, $numeroSala, $statusSala) {
     // Verificar se já existe uma sala com o mesmo nome ou número
-    $verificarSala = "SELECT * FROM sala WHERE (NOME_SALA = ? OR NUMERO_SALA = ?) AND ID_SALA != ?";
+    $verificarSala = "SELECT * FROM sala WHERE ID_SALA = ?";
     $stmtVerificacao = mysqli_prepare($conn, $verificarSala);
-    mysqli_stmt_bind_param($stmtVerificacao, "ssi", $nomeSala, $numeroSala, $id_sala);
+    mysqli_stmt_bind_param($stmtVerificacao, "i", $id_sala);
     mysqli_stmt_execute($stmtVerificacao);
     $resultadoVerificacao = mysqli_stmt_get_result($stmtVerificacao);
 
-    if (mysqli_num_rows($resultadoVerificacao) > 0) {
-        return false; // Já existe uma sala com o mesmo nome ou número
-    } else {
+        
         // Atualizar as informações no banco
         $atualizarSala = "UPDATE sala SET NOME_SALA = ?, NUMERO_SALA = ?, STATUS_SALA = ? WHERE ID_SALA = ?";
         $stmtAtualizacao = mysqli_prepare($conn, $atualizarSala);
-        mysqli_stmt_bind_param($stmtAtualizacao, "sssi", $nomeSala, $numeroSala, $statusSala, $id_sala);
+        mysqli_stmt_bind_param($stmtAtualizacao, "sisi", $nomeSala, $numeroSala, $statusSala, $id_sala);
         $resultadoAtualizacao = mysqli_stmt_execute($stmtAtualizacao);
 
         if ($resultadoAtualizacao) {
@@ -155,7 +153,7 @@ function update_sala($conn, $id_sala, $nomeSala, $numeroSala, $statusSala) {
         } else {
             return false; // Erro ao atualizar sala
         }
-    }
+    
 }
 
 

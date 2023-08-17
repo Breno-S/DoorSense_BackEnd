@@ -11,7 +11,7 @@ header("Content-Type: application/json; charset=UTF-8");
 // Response (deve ser um array associativo)
 $response = [];
 
-// Verifique o método da requisição
+// Verifica o método da requisição
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method == 'DELETE') {
@@ -19,7 +19,7 @@ if ($method == 'DELETE') {
     $data = json_decode($json_data, true);
 
     if (isset($data['id'])) {
-        $id_sala = intval($data['id']); // Certifique-se de que o campo correto seja 'id'
+        $id_sala = intval($data['id']); 
 
         if (delete_sala($conn, $id_sala)) {
             $response['status'] = "200 OK";

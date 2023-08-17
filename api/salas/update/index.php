@@ -11,7 +11,7 @@ header("Content-Type: application/json; charset=UTF-8");
 // Response (deve ser um array associativo)
 $response = [];
 
-// Verifique o método da requisição
+// Verifica o método da requisição
 $method = $_SERVER['REQUEST_METHOD'];
 
 // No código que recebe o JSON e faz a chamada da função update_sala:
@@ -20,10 +20,10 @@ if ($method == 'PUT') {
     $data = json_decode($json_data, true);
 
     if (
-        isset($data['id']) &&
-        isset($data['nome']) &&
-        isset($data['numero']) &&
-        isset($data['status'])
+        !empty($data['id']) &&
+        !empty($data['nome']) &&
+        !empty($data['numero']) &&
+        !empty($data['status'])
     ) {
         $id_sala = intval($data['id']);
         $nome_sala = $data['nome'];
