@@ -5,6 +5,8 @@ function answer($response) {
     echo json_encode($response);
 }
 
+/*****************************************************************************/
+
 function login($conn, $username, $password) {
     // String de consulta
     $sql = "SELECT * FROM admin WHERE EMAIL_ADMIN = ? AND SENHA_ADMIN = ?";
@@ -25,6 +27,8 @@ function login($conn, $username, $password) {
 
     return false;
 }
+
+/*****************************************************************************/
 
 function get_sala($conn, $id) {
     // String de consulta
@@ -49,16 +53,15 @@ function get_sala($conn, $id) {
     return false;
 }
 
+/*****************************************************************************/
+
 function get_all_salas($conn) {
     // String de consulta
     $sql = "SELECT * FROM sala";
 
     // Execução da consulta
     if ($result = mysqli_query($conn, $sql)) {
-        
-        // Execução da consulta
-        if ($result = mysqli_query($conn, $sql)) {
-            $result_set = [];
+        $result_set = [];
             
         // Agrupar os resultados
         while ($row = mysqli_fetch_assoc($result)) {
@@ -72,20 +75,40 @@ function get_all_salas($conn) {
             $result_set[] = $new_row;
         }
         
-        // String de consulta
-        $sql = "SELECT COUNT(*) AS total FROM sala";
+        // // String de consulta
+        // $sql = "SELECT COUNT(*) AS total FROM sala";
         
-        // Execução da consulta
-        if ($result = mysqli_query($conn, $sql)) 
-            $total_salas = mysqli_fetch_assoc($result);
-            array_unshift($result_set, $total_salas);
-        }
+        // // Execução da consulta
+        // if ($result = mysqli_query($conn, $sql)) {
+        //     $total_salas = mysqli_fetch_assoc($result);
+        //     array_unshift($result_set, $total_salas);
+        // }
 
         return $result_set;
     }
 
     return false;
 }
+
+/*****************************************************************************/
+
+function get_total_salas($conn) {
+    // String de consulta
+    $sql = "SELECT COUNT(*) AS total FROM sala";
+        
+    // Execução da consulta
+    if ($result = mysqli_query($conn, $sql)) {
+        $row = mysqli_fetch_assoc($result);
+        $total = $row['total'];
+
+        return $total;
+    }
+
+    return false;
+    
+}
+
+/*****************************************************************************/
 
 function create_sala($conn, $nome_sala, $numero_sala) {
     // String de consulta
@@ -110,5 +133,8 @@ function create_sala($conn, $nome_sala, $numero_sala) {
 
     return false;
 }
+
+/*****************************************************************************/
+
 
 ?>

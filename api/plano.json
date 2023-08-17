@@ -15,7 +15,7 @@
         "autenticação": "",
         "params": {
             "nome": "string",
-            "numero": "int",
+            "numero": "int"
         }
     },
 
@@ -34,8 +34,8 @@
         "autenticação": "",
         "params": {
             "id": "int",
-            "nome_da_sala": "string",
-            "numero_da_sala": "int",
+            "nome": "string",
+            "numero": "int",
             "ativo": "boolean"
         }
     },
