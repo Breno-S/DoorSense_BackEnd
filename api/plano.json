@@ -2,7 +2,6 @@
     "login": {
         "endpoint": ".../api/login/",
         "método": "POST",
-        "autenticação": "",
         "params": {
             "login": "string",
             "senha": "string"
@@ -12,7 +11,7 @@
     "create-sala": {
         "endpoint": ".../api/salas/create/",
         "método": "POST",    
-        "autenticação": "",
+        "autenticação": "Bearer ${token}",
         "params": {
             "nome": "string",
             "numero": "int"
@@ -22,7 +21,7 @@
     "read-sala": {
         "endpoint": ".../api/salas/",
         "método": "GET",
-        "autenticação": "",
+        "autenticação": "Bearer ${token}",
         "params": {
             "id": "int"
         }
@@ -31,7 +30,7 @@
     "update-sala": {
         "endpoint": ".../api/salas/update/",
         "método": "PUT",
-        "autenticação": "",
+        "autenticação": "Bearer ${token}",
         "params": {
             "id": "int",
             "nome": "string",
@@ -43,7 +42,7 @@
     "delete-sala" : {
         "endpoint": ".../api/salas/delete-sala",
          "método": "DELETE",
-         "autenticação": "",
+         "autenticação": "Bearer ${token}",
          "params": {
             "id" : "int"
          }

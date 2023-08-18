@@ -133,26 +133,60 @@ function create_sala($conn, $nome_sala, $numero_sala) {
     
 }
 
-function update_sala($conn, $id_sala, $nomeSala, $numeroSala, $statusSala) {
+function update_sala($conn, array $update_values) {
     // Verificar se já existe uma sala com o mesmo nome ou número
-    $verificarSala = "SELECT * FROM sala WHERE ID_SALA = ?";
-    $stmtVerificacao = mysqli_prepare($conn, $verificarSala);
-    mysqli_stmt_bind_param($stmtVerificacao, "i", $id_sala);
-    mysqli_stmt_execute($stmtVerificacao);
-    $resultadoVerificacao = mysqli_stmt_get_result($stmtVerificacao);
+    $id_sala = $update_values['id_sala'];
 
-        
-        // Atualizar as informações no banco
-        $atualizarSala = "UPDATE sala SET NOME_SALA = ?, NUMERO_SALA = ?, STATUS_SALA = ? WHERE ID_SALA = ?";
-        $stmtAtualizacao = mysqli_prepare($conn, $atualizarSala);
-        mysqli_stmt_bind_param($stmtAtualizacao, "sisi", $nomeSala, $numeroSala, $statusSala, $id_sala);
-        $resultadoAtualizacao = mysqli_stmt_execute($stmtAtualizacao);
+    // $verificarSala = "SELECT * FROM sala WHERE ID_SALA = ?";
+    // $stmtVerificacao = mysqli_prepare($conn, $verificarSala);
+    // mysqli_stmt_bind_param($stmtVerificacao, "i", $id_sala);
+    // mysqli_stmt_execute($stmtVerificacao);
+    // $resultadoVerificacao = mysqli_stmt_get_result($stmtVerificacao);
 
-        if ($resultadoAtualizacao) {
-            return true; // Sala atualizada com sucesso
-        } else {
-            return false; // Erro ao atualizar sala
-        }
+    $sql = "UPDATE sala SET ";
+    $types = "";
+    
+    // USAR O SPREAD OPERATOR PARA COLOCAR AS VARIAVEIS NA CHAMADA DA FUNÇÃO
+    $vars = [];
+
+    if (!empty($update_values['nome'])) {
+        $nome_sala = $update_values['nome'];
+        $sql .= "NOME_SALA = ?, ";
+        $types .= "s";
+        $vars[] = $nome_sala;
+    }
+
+    if (!empty($update_values['numero'])) {
+        $numero_sala = $update_values['numero'];
+        $sql .= "NUMERO_SALA = ?, ";
+        $types .= "i";
+        $vars[] = $numero_sala;
+    }
+    
+    if (!empty($update_values['status'])) {
+        $status_sala = $update_values['status'];
+        $sql .= "STATUS_SALA = ? ";
+        $types .= "s";
+        $vars[] = $status_sala;
+    }
+
+    $sql .= "WHERE ID_SALA = ?";
+
+    // i para o ID que é do tipo int
+    $types .= "i";
+    $vars[] = $id_sala;
+    
+    // Atualizar as informações no banco
+    // $atualizarSala = "UPDATE sala SET NOME_SALA = ?, NUMERO_SALA = ?, STATUS_SALA = ? WHERE ID_SALA = ?";
+    $stmtAtualizacao = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmtAtualizacao, $types, ...$vars);
+    $resultadoAtualizacao = mysqli_stmt_execute($stmtAtualizacao);
+
+    if ($resultadoAtualizacao) {
+        return true; // Sala atualizada com sucesso
+    } else {
+        return false; // Erro ao atualizar sala
+    }
     
 }
 
