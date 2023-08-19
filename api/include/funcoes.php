@@ -1,10 +1,5 @@
 <?php
 
-function answer($response) {
-    header("Content-Type: application/json");
-    echo json_encode($response);
-}
-
 function login($conn, $username, $password) {
     // String de consulta
     $sql = "SELECT * FROM admin WHERE EMAIL_ADMIN = ? AND SENHA_ADMIN = ?";
@@ -25,6 +20,8 @@ function login($conn, $username, $password) {
 
     return false;
 }
+
+/*****************************************************************************/
 
 function get_sala($conn, $id) {
     // String de consulta
@@ -49,16 +46,15 @@ function get_sala($conn, $id) {
     return false;
 }
 
+/*****************************************************************************/
+
 function get_all_salas($conn) {
     // String de consulta
     $sql = "SELECT * FROM sala";
 
     // Execução da consulta
     if ($result = mysqli_query($conn, $sql)) {
-        
-        // Execução da consulta
-        if ($result = mysqli_query($conn, $sql)) {
-            $result_set = [];
+        $result_set = [];
             
         // Agrupar os resultados
         while ($row = mysqli_fetch_assoc($result)) {
@@ -73,19 +69,38 @@ function get_all_salas($conn) {
         }
         
         // String de consulta
-        $sql = "SELECT COUNT(*) AS total FROM sala";
+        // $sql = "SELECT COUNT(*) AS total FROM sala";
         
-        // Execução da consulta
-        if ($result = mysqli_query($conn, $sql)) 
-            $total_salas = mysqli_fetch_assoc($result);
-            array_unshift($result_set, $total_salas);
-        }
+        // // Execução da consulta
+        // if ($result = mysqli_query($conn, $sql)) 
+        //     $total_salas = mysqli_fetch_assoc($result);
+        //     array_unshift($result_set, $total_salas);
+        // }
 
         return $result_set;
     }
 
     return false;
 }
+
+/*****************************************************************************/
+
+function get_total_salas($conn) {
+    // String de consulta
+    $sql = "SELECT COUNT(*) AS total FROM sala";
+        
+    // Execução da consulta
+    if ($result = mysqli_query($conn, $sql)) {
+        $row = mysqli_fetch_assoc($result);
+        $total = $row['total'];
+
+        return $total;
+    }
+
+    return false;
+}
+
+/*****************************************************************************/
 
 function create_sala($conn, $nome_sala, $numero_sala) {
     // String de consulta
@@ -107,58 +122,57 @@ function create_sala($conn, $nome_sala, $numero_sala) {
 
         return $row;
     }
+    return false;
 }
 
-    function delete_sala($conn, $id_sala) {
-        // String de consulta
-        $sql = "DELETE FROM sala WHERE ID_SALA = ?";
-    
-        // Preparação da consulta
-        $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, 'i', $id_sala);
-    
-        // Execução da consulta
+/*****************************************************************************/
 
-        if (mysqli_stmt_execute($stmt)) {
-            $rows_affected = mysqli_affected_rows($conn);
-    
-            if ($rows_affected > 0) {
-                return true; // Registro deletado com sucesso
-            } else {
-                return false; // Nenhum registro encontrado com o ID fornecido
-            }
+function delete_sala($conn, $id_sala) {
+    // String de consulta
+    $sql = "DELETE FROM sala WHERE ID_SALA = ?";
+
+    // Preparação da consulta
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, 'i', $id_sala);
+
+    // Execução da consulta
+
+    if (mysqli_stmt_execute($stmt)) {
+        $rows_affected = mysqli_affected_rows($conn);
+
+        if ($rows_affected > 0) {
+            return true; // Registro deletado com sucesso
         } else {
-            return false; // Erro ao deletar registro
+            return false; // Nenhum registro encontrado com o ID fornecido
         }
-    
+    } else {
+        return false; // Erro ao deletar registro
+    }
 }
+
+/*****************************************************************************/
 
 function update_sala($conn, array $update_values) {
-    // Verificar se já existe uma sala com o mesmo nome ou número
-    $id_sala = $update_values['id_sala'];
+    $id_sala = $update_values['id'];
 
-    // $verificarSala = "SELECT * FROM sala WHERE ID_SALA = ?";
-    // $stmtVerificacao = mysqli_prepare($conn, $verificarSala);
-    // mysqli_stmt_bind_param($stmtVerificacao, "i", $id_sala);
-    // mysqli_stmt_execute($stmtVerificacao);
-    // $resultadoVerificacao = mysqli_stmt_get_result($stmtVerificacao);
-
+    // string de consulta
     $sql = "UPDATE sala SET ";
+
+    // argumentos para a funcao mysqli_stmt_bind_param()
     $types = "";
-    
-    // USAR O SPREAD OPERATOR PARA COLOCAR AS VARIAVEIS NA CHAMADA DA FUNÇÃO
     $vars = [];
 
+    // verificacao de quais campos que serao atualizados
     if (!empty($update_values['nome'])) {
         $nome_sala = $update_values['nome'];
-        $sql .= "NOME_SALA = ?, ";
+        $sql .= "NOME_SALA = ?,";
         $types .= "s";
         $vars[] = $nome_sala;
     }
 
     if (!empty($update_values['numero'])) {
         $numero_sala = $update_values['numero'];
-        $sql .= "NUMERO_SALA = ?, ";
+        $sql .= "NUMERO_SALA = ?,";
         $types .= "i";
         $vars[] = $numero_sala;
     }
@@ -170,14 +184,18 @@ function update_sala($conn, array $update_values) {
         $vars[] = $status_sala;
     }
 
+    // remove virgula residual antes do WHERE
+    if ($sql[strlen($sql)-1] == ",") {
+        $sql[strlen($sql)-1] = " ";
+    }
+    
     $sql .= "WHERE ID_SALA = ?";
 
-    // i para o ID que é do tipo int
+    // "i" para o ID que é do tipo int
     $types .= "i";
     $vars[] = $id_sala;
     
     // Atualizar as informações no banco
-    // $atualizarSala = "UPDATE sala SET NOME_SALA = ?, NUMERO_SALA = ?, STATUS_SALA = ? WHERE ID_SALA = ?";
     $stmtAtualizacao = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmtAtualizacao, $types, ...$vars);
     $resultadoAtualizacao = mysqli_stmt_execute($stmtAtualizacao);
@@ -189,9 +207,5 @@ function update_sala($conn, array $update_values) {
     }
     
 }
-
-
-
-
 
 ?>

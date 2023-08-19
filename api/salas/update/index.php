@@ -62,7 +62,7 @@ if ($method == 'PUT') {
                 $status_sala = $data['status'];
             }
         } else {
-            $status = null;
+            $status_sala = null;
         }
 
         $update_values = [];

@@ -41,14 +41,10 @@
 
     "delete-sala" : {
         "endpoint": ".../api/salas/delete-sala",
-         "método": "DELETE",
-         "autenticação": "Bearer ${token}",
-         "params": {
+        "método": "DELETE",
+        "autenticação": "Bearer ${token}",
+        "params": {
             "id" : "int"
-         }
-    },
-
-    "": {
-
+        }
     }
 }
