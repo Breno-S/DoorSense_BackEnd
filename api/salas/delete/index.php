@@ -27,8 +27,6 @@ if ($method == 'DELETE') {
         } else {
             $response['status'] = "500 Internal Server Error";
             $response['message'] = "Erro ao deletar sala: " . mysqli_error($conn);
-            echo json_encode($response);
-
         }
     } else {
         $response['status'] = "400 Bad Request";
