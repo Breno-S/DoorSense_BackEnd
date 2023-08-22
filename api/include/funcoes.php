@@ -2,7 +2,7 @@
 
 function login($conn, $username, $password) {
     // String de consulta
-    $sql = "SELECT * FROM admin WHERE EMAIL_ADMIN = ? AND SENHA_ADMIN = ?";
+    $sql = "SELECT * FROM admin WHERE email_admin = ? AND senha_admin = ?";
     
     // Preparação da consulta
     $stmt = mysqli_prepare($conn, $sql);
@@ -25,7 +25,7 @@ function login($conn, $username, $password) {
 
 function get_sala($conn, $id) {
     // String de consulta
-    $sql = "SELECT * FROM sala WHERE ID_sala = ?";
+    $sql = "SELECT * FROM sala WHERE id_sala = ?";
 
     // Preparação da consulta
     $stmt = mysqli_prepare($conn, $sql);
@@ -39,8 +39,36 @@ function get_sala($conn, $id) {
 
     // Verificar o número de linhas retornadas
     if (mysqli_num_rows($result) == 1) {
-        $row = mysqli_fetch_assoc($result);
-        return $row;
+        $row_sala = mysqli_fetch_assoc($result);
+
+        $data = $row_sala;
+        
+        if (empty($row_sala['FK_ARDUINO'])) {
+
+            $data['ARDUINO_SALA'] = null;
+            $data['STATUS_SALA'] = null;
+
+        } else {
+            // String de consulta
+            $sql = "SELECT unique_id as ARDUINO_SALA,
+                    status_arduino as STATUS_SALA FROM arduino
+                    INNER JOIN sala ON id_arduino = fk_arduino
+                    WHERE fk_arduino = ?";
+            
+            // Preparação da consulta
+            $stmt = mysqli_prepare($conn, $sql);
+            mysqli_stmt_bind_param($stmt, 'i', $row_sala['FK_ARDUINO']);
+        
+            // Execução da consulta
+            mysqli_stmt_execute($stmt);
+
+            // Obter o resultado da consulta
+            $result = mysqli_stmt_get_result($stmt);
+            $row_arduino = mysqli_fetch_assoc($result);
+
+            $data = array_merge($data, $row_arduino);
+        }
+        return $data;
     }
 
     return false;
@@ -50,7 +78,8 @@ function get_sala($conn, $id) {
 
 function get_all_salas($conn) {
     // String de consulta
-    $sql = "SELECT * FROM sala";
+    $sql = "SELECT * FROM sala
+            LEFT JOIN arduino ON fk_arduino = id_arduino;";
 
     // Execução da consulta
     if ($result = mysqli_query($conn, $sql)) {
@@ -63,19 +92,11 @@ function get_all_salas($conn) {
             $new_row["id"] = $row['ID_SALA'];
             $new_row["nome"] = $row['NOME_SALA'];
             $new_row["numero"] = $row['NUMERO_SALA'];
-            $new_row["status"] = $row['STATUS_SALA'];
+            $new_row["arduino"] = $row['UNIQUE_ID'];
+            $new_row["status"] = $row['STATUS_ARDUINO'];
             
             $result_set[] = $new_row;
         }
-        
-        // String de consulta
-        // $sql = "SELECT COUNT(*) AS total FROM sala";
-        
-        // // Execução da consulta
-        // if ($result = mysqli_query($conn, $sql)) 
-        //     $total_salas = mysqli_fetch_assoc($result);
-        //     array_unshift($result_set, $total_salas);
-        // }
 
         return $result_set;
     }
@@ -116,7 +137,7 @@ function create_sala($conn, $nome_sala, $numero_sala) {
     $id = mysqli_insert_id($conn) ? mysqli_insert_id($conn) : null;
 
     if ($id) {
-        $sql = "SELECT * FROM sala WHERE ID_SALA = $id";
+        $sql = "SELECT * FROM sala WHERE id_sala = $id";
         $result = mysqli_query($conn, $sql);
         $row = mysqli_fetch_assoc($result);
 
@@ -129,7 +150,7 @@ function create_sala($conn, $nome_sala, $numero_sala) {
 
 function delete_sala($conn, $id_sala) {
     // String de consulta
-    $sql = "DELETE FROM sala WHERE ID_SALA = ?";
+    $sql = "DELETE FROM sala WHERE id_sala = ?";
 
     // Preparação da consulta
     $stmt = mysqli_prepare($conn, $sql);
@@ -165,21 +186,21 @@ function update_sala($conn, array $update_values) {
     // verificacao de quais campos que serao atualizados
     if (!empty($update_values['nome'])) {
         $nome_sala = $update_values['nome'];
-        $sql .= "NOME_SALA = ?,";
+        $sql .= "nome_sala = ?,";
         $types .= "s";
         $vars[] = $nome_sala;
     }
 
     if (!empty($update_values['numero'])) {
         $numero_sala = $update_values['numero'];
-        $sql .= "NUMERO_SALA = ?,";
+        $sql .= "numero_sala = ?,";
         $types .= "i";
         $vars[] = $numero_sala;
     }
     
     if (!empty($update_values['status'])) {
         $status_sala = $update_values['status'];
-        $sql .= "STATUS_SALA = ? ";
+        $sql .= "status_sala = ? ";
         $types .= "s";
         $vars[] = $status_sala;
     }
@@ -189,7 +210,7 @@ function update_sala($conn, array $update_values) {
         $sql[strlen($sql)-1] = " ";
     }
     
-    $sql .= "WHERE ID_SALA = ?";
+    $sql .= "WHERE id_sala = ?";
 
     // "i" para o ID que é do tipo int
     $types .= "i";
