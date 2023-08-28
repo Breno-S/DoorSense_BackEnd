@@ -35,6 +35,7 @@
             "id": "int",
             "nome": "string",
             "numero": "int",
+            "arduino": "string",
             "ativo": "boolean"
         }
     },
