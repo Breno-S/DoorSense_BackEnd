@@ -29,7 +29,8 @@ if ($method == 'POST') {
                     "id" => $nova_sala['ID_SALA'],
                     "nome" => $nova_sala['NOME_SALA'],
                     "numero" => $nova_sala['NUMERO_SALA'],
-                    "status" => $nova_sala['STATUS_SALA']
+                    "arduino" => null,
+                    "status" => null
                 ];
         } else {
             $response['status'] = "401 Unauthorized";
