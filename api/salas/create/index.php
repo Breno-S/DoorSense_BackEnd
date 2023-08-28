@@ -22,14 +22,15 @@ if ($method == 'POST') {
         $nome_sala = $data['nome'];
         $numero_sala = intval($data['numero']);
 
-        if ($nova_sala = create_sala($conn, $nome_sala, $numero_sala)) {
+        if ($nova_sala = create_sala($conn, $nome_sala, $numero_sala, )) {
                 $response['status'] = "200 OK";
                 $response['message'] = "Sala adicionada com sucesso";
                 $response['data'] = [
                     "id" => $nova_sala['ID_SALA'],
                     "nome" => $nova_sala['NOME_SALA'],
                     "numero" => $nova_sala['NUMERO_SALA'],
-                    "status" => $nova_sala['STATUS_SALA']
+                    "arduino" => null,
+                    "status" => null
                 ];
         } else {
             $response['status'] = "401 Unauthorized";

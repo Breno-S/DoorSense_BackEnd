@@ -28,7 +28,6 @@ if ($method == 'GET') {
                     "id" => $sala['ID_SALA'],
                     "nome" => $sala['NOME_SALA'],
                     "numero" => $sala['NUMERO_SALA'],
-                    "arduino" => $sala['ARDUINO_SALA'],
                     "status" => $sala['STATUS_SALA']
                 ];
             } else {
