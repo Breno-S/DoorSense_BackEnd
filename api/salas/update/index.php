@@ -21,6 +21,7 @@ if ($method == 'PUT') {
 
     if ( (!empty($data['id'])) && ( isset($data['nome']) ||
                                     isset($data['numero']) ||
+                                    isset($data['arduino']) ||
                                     isset($data['status'])  )
         )   
     {
@@ -52,6 +53,19 @@ if ($method == 'PUT') {
             $numero_sala = null;
         }
 
+        // verifica possível chave de 'arduino'
+        if (isset($data['arduino'])) {
+            if (empty($data['arduino'])) {
+                $response['status'] = "400 Bad Request";
+                $response['message'] = "Parâmetros inválidos";
+                goto enviar_resposta;
+            } else {
+                $arduino_sala = $data['arduino'];
+            }
+        } else {
+            $arduino_sala = null;
+        }
+
         // verifica possível chave de 'status'
         if (isset($data['status'])) {
             if (empty($data['status'])) {
@@ -69,6 +83,7 @@ if ($method == 'PUT') {
         $update_values['id'] = $id_sala;
         $update_values['nome'] = $nome_sala;
         $update_values['numero'] = $numero_sala;
+        $update_values['arduino'] = $arduino_sala;
         $update_values['status'] = $status_sala;
         
 

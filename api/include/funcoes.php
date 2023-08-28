@@ -176,6 +176,41 @@ function delete_sala($conn, $id_sala) {
 function update_sala($conn, array $update_values) {
     $id_sala = $update_values['id'];
 
+    // Verifica se quer adicionar/alterar o arduino
+    if (!empty($update_values['arduino_sala']) && !empty($update_values['status_sala'])) {
+        $unique_id = $update_values['arduino_sala'];
+        $status_arduino = $update_values['status_sala'];
+
+        // Verificar se o arduino já existe no banco
+        $sql = "SELECT * FROM arduino WHERE unique_id = ?";
+
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "s", $unique_id);
+        mysqli_stmt_execute($stmt);
+        
+        $result = mysqli_stmt_get_result($stmt);
+
+        // SE houver arduino no banco
+        if (mysqli_num_rows($result) == 1) {
+            // obtenha o id dele
+            $row_arduino = mysqli_fetch_assoc($result);
+            $id_arduino = $row_arduino['ID_ARDUINO'];
+        } else {
+            // SENÃO, crie um registro
+            $sql = "INSERT INTO arduino (id_arduino, unique_id, status_arduino, last_update)
+                    VALUES (DEFAULT, '$unique_id', DEFAULT, DEFAULT)";
+
+            $stmt = mysqli_prepare($conn, $sql);
+            mysqli_stmt_bind_param($stmt, "s", $unique_id);
+            mysqli_stmt_execute($stmt);
+            
+            // FALTA CRIAR ERROR HANDLER PARA A CRIAÇÃO DE ARDUINO QUE PODE DAR ERRADO
+            $id_arduino = mysqli_insert_id($conn) ? mysqli_insert_id($conn) : null;
+        }
+    } else {
+        $id_arduino = null;
+    }
+
     // string de consulta
     $sql = "UPDATE sala SET ";
 
@@ -197,12 +232,12 @@ function update_sala($conn, array $update_values) {
         $types .= "i";
         $vars[] = $numero_sala;
     }
-    
-    if (!empty($update_values['status'])) {
-        $status_sala = $update_values['status'];
-        $sql .= "status_sala = ? ";
-        $types .= "s";
-        $vars[] = $status_sala;
+
+    if (!empty($id_arduino)) {
+        $numero_sala = $update_values['numero'];
+        $sql .= "fk_arduino = ?,";
+        $types .= "i";
+        $vars[] = $id_arduino;
     }
 
     // remove virgula residual antes do WHERE
@@ -219,13 +254,8 @@ function update_sala($conn, array $update_values) {
     // Atualizar as informações no banco
     $stmtAtualizacao = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmtAtualizacao, $types, ...$vars);
-    $resultadoAtualizacao = mysqli_stmt_execute($stmtAtualizacao);
-
-    if ($resultadoAtualizacao) {
-        return true; // Sala atualizada com sucesso
-    } else {
-        return false; // Erro ao atualizar sala
-    }
+    
+    return mysqli_stmt_execute($stmtAtualizacao);
     
 }
 
