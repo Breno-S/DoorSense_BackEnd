@@ -176,87 +176,67 @@ function delete_sala($conn, $id_sala) {
 function update_sala($conn, array $update_values) {
     $id_sala = $update_values['id'];
 
+    // Obtem os dados da sala a ser alterada
+    $sql = "SELECT * FROM sala WHERE id_sala = ?";
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $id_sala);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    $row_sala_old = mysqli_fetch_assoc($result);
+
     // Verifica se quer adicionar/alterar o arduino
-    if (!empty($update_values['arduino_sala']) && !empty($update_values['status_sala'])) {
-        $unique_id = $update_values['arduino_sala'];
-        $status_arduino = $update_values['status_sala'];
+    if (!empty($update_values['arduino']) && !empty($update_values['status'])) {
+        $unique_id = $update_values['arduino'];
+        $status_arduino = $update_values['status'];
 
         // Verificar se o arduino já existe no banco
         $sql = "SELECT * FROM arduino WHERE unique_id = ?";
-
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, "s", $unique_id);
         mysqli_stmt_execute($stmt);
-        
         $result = mysqli_stmt_get_result($stmt);
 
-        // SE houver arduino no banco
+        // SE houver o arduino no banco
         if (mysqli_num_rows($result) == 1) {
             // obtenha o id dele
             $row_arduino = mysqli_fetch_assoc($result);
             $id_arduino = $row_arduino['ID_ARDUINO'];
+
+            // e atualize seu status
+            $sql = "UPDATE arduino SET status_arduino = ? WHERE id_arduino = ?";
+            $stmt = mysqli_prepare($conn, $sql);
+            mysqli_stmt_bind_param($stmt, "si", $status_arduino, $id_arduino);
+            mysqli_stmt_execute($stmt);
         } else {
             // SENÃO, crie um registro
             $sql = "INSERT INTO arduino (id_arduino, unique_id, status_arduino, last_update)
-                    VALUES (DEFAULT, '$unique_id', DEFAULT, DEFAULT)";
-
+                    VALUES (DEFAULT, ?, ?, DEFAULT)";
             $stmt = mysqli_prepare($conn, $sql);
-            mysqli_stmt_bind_param($stmt, "s", $unique_id);
+            mysqli_stmt_bind_param($stmt, "ss", $unique_id, $status_arduino);
             mysqli_stmt_execute($stmt);
             
-            // FALTA CRIAR ERROR HANDLER PARA A CRIAÇÃO DE ARDUINO QUE PODE DAR ERRADO
+            // e obtenha seu id
             $id_arduino = mysqli_insert_id($conn) ? mysqli_insert_id($conn) : null;
         }
     } else {
-        $id_arduino = null;
+        $id_arduino = $row_sala_old['FK_ARDUINO'];
     }
-
-    // string de consulta
-    $sql = "UPDATE sala SET ";
-
-    // argumentos para a funcao mysqli_stmt_bind_param()
-    $types = "";
-    $vars = [];
 
     // verificacao de quais campos que serao atualizados
-    if (!empty($update_values['nome'])) {
-        $nome_sala = $update_values['nome'];
-        $sql .= "nome_sala = ?,";
-        $types .= "s";
-        $vars[] = $nome_sala;
-    }
+    $nome_sala = empty($update_values['nome']) ?
+                    $row_sala_old['NOME_SALA'] : $update_values['nome'];
+    $numero_sala = empty($update_values['numero']) ?
+                      $row_sala_old['NUMERO_SALA'] : $update_values['numero'];
 
-    if (!empty($update_values['numero'])) {
-        $numero_sala = $update_values['numero'];
-        $sql .= "numero_sala = ?,";
-        $types .= "i";
-        $vars[] = $numero_sala;
-    }
-
-    if (!empty($id_arduino)) {
-        $numero_sala = $update_values['numero'];
-        $sql .= "fk_arduino = ?,";
-        $types .= "i";
-        $vars[] = $id_arduino;
-    }
-
-    // remove virgula residual antes do WHERE
-    if ($sql[strlen($sql)-1] == ",") {
-        $sql[strlen($sql)-1] = " ";
-    }
-    
-    $sql .= "WHERE id_sala = ?";
-
-    // "i" para o ID que é do tipo int
-    $types .= "i";
-    $vars[] = $id_sala;
+    // string de consulta
+    $sql = "UPDATE sala SET nome_sala = ?, numero_sala = ?, fk_arduino = ? WHERE id_sala = ?";
     
     // Atualizar as informações no banco
     $stmtAtualizacao = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmtAtualizacao, $types, ...$vars);
+    mysqli_stmt_bind_param($stmtAtualizacao, "siii", $nome_sala, $numero_sala, $id_arduino, $id_sala);
     
     return mysqli_stmt_execute($stmtAtualizacao);
-    
 }
 
 ?>
