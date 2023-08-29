@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 28-Ago-2023 às 18:52
+-- Tempo de geração: 29/08/2023 às 21:58
 -- Versão do servidor: 10.4.28-MariaDB
--- versão do PHP: 8.2.4
+-- Versão do PHP: 8.1.17
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `admin`
+-- Estrutura para tabela `admin`
 --
 
 CREATE TABLE `admin` (
@@ -34,7 +34,7 @@ CREATE TABLE `admin` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `admin`
+-- Despejando dados para a tabela `admin`
 --
 
 INSERT INTO `admin` (`ID_ADMIN`, `EMAIL_ADMIN`, `SENHA_ADMIN`) VALUES
@@ -43,7 +43,7 @@ INSERT INTO `admin` (`ID_ADMIN`, `EMAIL_ADMIN`, `SENHA_ADMIN`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `arduino`
+-- Estrutura para tabela `arduino`
 --
 
 CREATE TABLE `arduino` (
@@ -54,7 +54,7 @@ CREATE TABLE `arduino` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `arduino`
+-- Despejando dados para a tabela `arduino`
 --
 
 INSERT INTO `arduino` (`ID_ARDUINO`, `UNIQUE_ID`, `STATUS_ARDUINO`, `LAST_UPDATE`) VALUES
@@ -64,25 +64,25 @@ INSERT INTO `arduino` (`ID_ARDUINO`, `UNIQUE_ID`, `STATUS_ARDUINO`, `LAST_UPDATE
 -- --------------------------------------------------------
 
 --
--- Estrutura da tabela `sala`
+-- Estrutura para tabela `sala`
 --
 
 CREATE TABLE `sala` (
   `ID_SALA` int(11) NOT NULL,
   `NOME_SALA` varchar(100) NOT NULL,
-  `NUMERO_SALA` tinyint(3) UNSIGNED DEFAULT NULL,
+  `NUMERO_SALA` varchar(4) DEFAULT NULL,
   `FK_ARDUINO` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Extraindo dados da tabela `sala`
+-- Despejando dados para a tabela `sala`
 --
 
 INSERT INTO `sala` (`ID_SALA`, `NOME_SALA`, `NUMERO_SALA`, `FK_ARDUINO`) VALUES
-(1, 'Laboratório de Informática', 1, 1),
-(2, 'Laboratório de Informática', 2, 2),
-(3, 'Laboratório de Informática', 3, NULL),
-(4, 'Laboratório de Informática', 4, NULL),
+(1, 'Laboratório de Informática', '1', 1),
+(2, 'Laboratório de Informática', '2', 2),
+(3, 'Laboratório de Informática', '3', NULL),
+(4, 'Laboratório de Informática', '4', NULL),
 (5, 'Biblioteca', NULL, NULL);
 
 --
@@ -90,21 +90,21 @@ INSERT INTO `sala` (`ID_SALA`, `NOME_SALA`, `NUMERO_SALA`, `FK_ARDUINO`) VALUES
 --
 
 --
--- Índices para tabela `admin`
+-- Índices de tabela `admin`
 --
 ALTER TABLE `admin`
   ADD PRIMARY KEY (`ID_ADMIN`),
   ADD UNIQUE KEY `EMAIL_ADMIN` (`EMAIL_ADMIN`);
 
 --
--- Índices para tabela `arduino`
+-- Índices de tabela `arduino`
 --
 ALTER TABLE `arduino`
   ADD PRIMARY KEY (`ID_ARDUINO`),
   ADD UNIQUE KEY `UNIQUE_ID` (`UNIQUE_ID`);
 
 --
--- Índices para tabela `sala`
+-- Índices de tabela `sala`
 --
 ALTER TABLE `sala`
   ADD PRIMARY KEY (`ID_SALA`),
@@ -112,7 +112,7 @@ ALTER TABLE `sala`
   ADD UNIQUE KEY `UC_NOME_NUMERO` (`NOME_SALA`,`NUMERO_SALA`);
 
 --
--- AUTO_INCREMENT de tabelas despejadas
+-- AUTO_INCREMENT para tabelas despejadas
 --
 
 --
@@ -134,11 +134,11 @@ ALTER TABLE `sala`
   MODIFY `ID_SALA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- Restrições para despejos de tabelas
+-- Restrições para tabelas despejadas
 --
 
 --
--- Limitadores para a tabela `sala`
+-- Restrições para tabelas `sala`
 --
 ALTER TABLE `sala`
   ADD CONSTRAINT `sala_ibfk_1` FOREIGN KEY (`FK_ARDUINO`) REFERENCES `arduino` (`ID_ARDUINO`);

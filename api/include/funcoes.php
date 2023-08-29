@@ -124,12 +124,14 @@ function get_total_salas($conn) {
 /*****************************************************************************/
 
 function create_sala($conn, $nome_sala, $numero_sala) {
+    $numero_sala = empty($numero_sala) ? null : $numero_sala;
+    
     // String de consulta
     $sql = "INSERT INTO sala VALUES (DEFAULT, ?, ?, DEFAULT)";
 
     // Preparação da consulta
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, 'si', $nome_sala, $numero_sala);
+    mysqli_stmt_bind_param($stmt, 'ss', $nome_sala, $numero_sala);
 
     // Execução da consulta
     mysqli_stmt_execute($stmt);

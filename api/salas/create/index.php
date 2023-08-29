@@ -20,7 +20,7 @@ if ($method == 'POST') {
 
     if ( (isset($data['nome'])) && (isset($data['numero'])) ) {
         $nome_sala = $data['nome'];
-        $numero_sala = intval($data['numero']);
+        $numero_sala = $data['numero'];
 
         if ($nova_sala = create_sala($conn, $nome_sala, $numero_sala)) {
                 $response['status'] = "200 OK";
