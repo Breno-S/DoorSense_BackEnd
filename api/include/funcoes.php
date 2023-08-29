@@ -229,14 +229,37 @@ function update_sala($conn, array $update_values) {
     $numero_sala = empty($update_values['numero']) ?
                       $row_sala_old['NUMERO_SALA'] : $update_values['numero'];
 
-    // string de consulta
+    // string de update
     $sql = "UPDATE sala SET nome_sala = ?, numero_sala = ?, fk_arduino = ? WHERE id_sala = ?";
     
     // Atualizar as informações no banco
     $stmtAtualizacao = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmtAtualizacao, "siii", $nome_sala, $numero_sala, $id_arduino, $id_sala);
     
-    return mysqli_stmt_execute($stmtAtualizacao);
+    // se deu certo
+    if (mysqli_stmt_execute($stmtAtualizacao)) {
+        // obter dados para a response 
+        $sql = "SELECT * FROM SALA
+                INNER JOIN arduino ON fk_arduino = id_arduino
+                WHERE id_sala = $id_sala";
+
+        if ($result = mysqli_query($conn, $sql)) {
+            $row = mysqli_fetch_assoc($result);
+            
+            // Colocar os nomes das chaves no padrão vigente
+            $new_row["id"] = $row['ID_SALA'];
+            $new_row["nome"] = $row['NOME_SALA'];
+            $new_row["numero"] = $row['NUMERO_SALA'];
+            $new_row["arduino"] = $row['UNIQUE_ID'];
+            $new_row["status"] = $row['STATUS_ARDUINO'];
+
+            return $new_row;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
 }
 
 ?>

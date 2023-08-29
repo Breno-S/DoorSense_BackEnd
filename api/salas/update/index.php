@@ -90,11 +90,13 @@ if ($method == 'PUT') {
         // $numero_sala = empty($data['numero']) ? null : intval($data['numero']);
         // $status_sala = empty($data['status']) ? null : $data['status'];
 
-        $atualizacao_sucesso = update_sala($conn, $update_values);
+        $atualizacao = update_sala($conn, $update_values);
         
-        if ($atualizacao_sucesso) {
+        if ($atualizacao) {
             $response['status'] = "200 OK";
             $response['message'] = "Sala atualizada com sucesso";
+            $response['data'] = $atualizacao;
+
         } else {
             $response['status'] = "500 Internal Server Error";
             $response['message'] = "Erro ao atualizar sala";
