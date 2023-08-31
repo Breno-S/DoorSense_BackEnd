@@ -1,6 +1,9 @@
 <?php
 include_once '../include/conexao.php';
 include_once '../include/funcoes.php';
+require 'vendor/autoload.php'; // autoload do Firebase JWT
+
+use \Firebase\JWT\JWT;
 
 // Headers
 header("Access-Control-Allow-Origin: *");
@@ -8,10 +11,9 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
-// Response (deve ser um array associativo)
+// Response
 $response = [];
 
-// Verifique o método da requisição
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method == 'POST') {
@@ -23,9 +25,28 @@ if ($method == 'POST') {
         $password = $data['password'];
 
         if (login($conn, $username, $password)) {
+            //token JWT
+            $key = 'arduino';
+            $tokenId = base64_encode(random_bytes(32));
+            $issuedAt = time();
+            $expire = $issuedAt + 86400; // 1 dia de validade
+
+            //criação do token
+            $tokenData = [
+                'iat'  => $issuedAt,
+                'jti'  => $tokenId,
+                'exp'  => $expire,
+                'data' => [
+                    'username' => $username
+                ]
+            ];
+
+            $token = JWT::encode($tokenData, $key, 'HS256');
+
             $response = [
                 'status' => "200 OK",
-                'message' => "Login realizado com sucesso"
+                'message' => "Login realizado com sucesso",
+                'token' => $token
             ];
         } else {
             $response['status'] = "401 Unauthorized";
