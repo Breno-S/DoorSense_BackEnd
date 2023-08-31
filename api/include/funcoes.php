@@ -188,9 +188,8 @@ function update_sala($conn, array $update_values) {
     $row_sala_old = mysqli_fetch_assoc($result);
 
     // Verifica se quer adicionar/alterar o arduino
-    if (!empty($update_values['arduino']) && !empty($update_values['status'])) {
+    if (!empty($update_values['arduino'])) {
         $unique_id = $update_values['arduino'];
-        $status_arduino = $update_values['status'];
 
         // Verificar se o arduino já existe no banco
         $sql = "SELECT * FROM arduino WHERE unique_id = ?";
@@ -204,22 +203,8 @@ function update_sala($conn, array $update_values) {
             // obtenha o id dele
             $row_arduino = mysqli_fetch_assoc($result);
             $id_arduino = $row_arduino['ID_ARDUINO'];
-
-            // e atualize seu status
-            $sql = "UPDATE arduino SET status_arduino = ? WHERE id_arduino = ?";
-            $stmt = mysqli_prepare($conn, $sql);
-            mysqli_stmt_bind_param($stmt, "si", $status_arduino, $id_arduino);
-            mysqli_stmt_execute($stmt);
         } else {
-            // SENÃO, crie um registro
-            $sql = "INSERT INTO arduino (id_arduino, unique_id, status_arduino, last_update)
-                    VALUES (DEFAULT, ?, ?, DEFAULT)";
-            $stmt = mysqli_prepare($conn, $sql);
-            mysqli_stmt_bind_param($stmt, "ss", $unique_id, $status_arduino);
-            mysqli_stmt_execute($stmt);
-            
-            // e obtenha seu id
-            $id_arduino = mysqli_insert_id($conn) ? mysqli_insert_id($conn) : null;
+            $id_arduino = $row_sala_old['FK_ARDUINO'];
         }
     } else {
         $id_arduino = $row_sala_old['FK_ARDUINO'];
@@ -233,21 +218,21 @@ function update_sala($conn, array $update_values) {
 
     // string de update
     $sql = "UPDATE sala SET nome_sala = ?, numero_sala = ?, fk_arduino = ? WHERE id_sala = ?";
-    
+
     // Atualizar as informações no banco
     $stmtAtualizacao = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmtAtualizacao, "siii", $nome_sala, $numero_sala, $id_arduino, $id_sala);
+    mysqli_stmt_bind_param($stmtAtualizacao, "ssii", $nome_sala, $numero_sala, $id_arduino, $id_sala);
     
-    // se deu certo
+    // SE deu certo
     if (mysqli_stmt_execute($stmtAtualizacao)) {
         // obter dados para a response 
-        $sql = "SELECT * FROM SALA
-                INNER JOIN arduino ON fk_arduino = id_arduino
+        $sql = "SELECT * FROM sala
+                LEFT JOIN arduino ON fk_arduino = id_arduino
                 WHERE id_sala = $id_sala";
 
-        if ($result = mysqli_query($conn, $sql)) {
-            $row = mysqli_fetch_assoc($result);
-            
+        $result = mysqli_query($conn, $sql);
+
+        if ($row = mysqli_fetch_assoc($result)) {
             // Colocar os nomes das chaves no padrão vigente
             $new_row["id"] = $row['ID_SALA'];
             $new_row["nome"] = $row['NOME_SALA'];

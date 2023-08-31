@@ -21,8 +21,7 @@ if ($method == 'PUT') {
 
     if ( (!empty($data['id'])) && ( isset($data['nome']) ||
                                     isset($data['numero']) ||
-                                    isset($data['arduino']) ||
-                                    isset($data['status'])  )
+                                    isset($data['arduino']) )
         )   
     {
         $id_sala = intval($data['id']);
@@ -66,29 +65,11 @@ if ($method == 'PUT') {
             $arduino_sala = null;
         }
 
-        // verifica possível chave de 'status'
-        if (isset($data['status'])) {
-            if (empty($data['status'])) {
-                $response['status'] = "400 Bad Request";
-                $response['message'] = "Parâmetros inválidos";
-                goto enviar_resposta;
-            } else {
-                $status_sala = $data['status'];
-            }
-        } else {
-            $status_sala = null;
-        }
-
         $update_values = [];
         $update_values['id'] = $id_sala;
         $update_values['nome'] = $nome_sala;
         $update_values['numero'] = $numero_sala;
         $update_values['arduino'] = $arduino_sala;
-        $update_values['status'] = $status_sala;
-        
-
-        // $numero_sala = empty($data['numero']) ? null : intval($data['numero']);
-        // $status_sala = empty($data['status']) ? null : $data['status'];
 
         $atualizacao = update_sala($conn, $update_values);
         
