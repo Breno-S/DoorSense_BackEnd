@@ -8,21 +8,24 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
-// Response (deve ser um array associativo)
+// Array associativo.
 $response = [];
 
-// Verifique o método da requisição
+// Verifica o método da requisição.
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method == 'POST') {
     $json_data = file_get_contents('php://input');
     $data = json_decode($json_data, true);
 
-    if ( (isset($data['nome'])) && (isset($data['numero'])) ) {
-        $nome_sala = $data['nome'];
-        $numero_sala = $data['numero'];
+    if ($data !== null && is_array($data)) { //Se são válidos e se são um array.
+        if (isset($data['nome']) && isset($data['numero']) && is_string($data['nome']) && is_string($data['numero'])) {
+            $nome_sala = trim($data['nome']); //Remove espaço no início e final de uma string
+            $numero_sala = trim($data['numero']);
 
-        if ($nova_sala = create_sala($conn, $nome_sala, $numero_sala)) {
+            
+
+            if ($nova_sala = create_sala($conn, $nome_sala, $numero_sala)) {
                 $response['status'] = "200 OK";
                 $response['message'] = "Sala adicionada com sucesso";
                 $response['data'] = [
@@ -32,17 +35,20 @@ if ($method == 'POST') {
                     "arduino" => null,
                     "status" => null
                 ];
+            } else {
+                $response['status'] = "500 Internal Server Error";
+                $response['message'] = "Erro ao criar a sala";
+            }
         } else {
-            $response['status'] = "401 Unauthorized";
-            $response['message'] = "Credenciais inválidas";
+            $response['status'] = "400 Bad Request"; // requisição do cliente não está correta
+            $response['message'] = "Parâmetros inválidos";
         }
     } else {
-        $response['status'] = "400 Bad Request";
-        $response['message'] = "Parâmetros inválidos";
+        $response['status'] = "400 Bad Request";  // requisição do cliente não está correta
+        $response['message'] = "JSON inválido";
     }
 } else {
-    http_response_code(400);
-    $response['status'] = "400 Bad Request";
+    $response['status'] = "405 Method Not Allowed";  
     $response['message'] = "Método da requisição inválido";
 }
 
