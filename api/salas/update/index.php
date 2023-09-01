@@ -19,11 +19,9 @@ if ($method == 'PUT') {
     $json_data = file_get_contents('php://input');
     $data = json_decode($json_data, true);
 
-    if ( (!empty($data['id'])) && ( isset($data['nome']) ||
-                                    isset($data['numero']) ||
-                                    isset($data['arduino']) )
-        )   
-    {
+    if (isset($data['id']) && (!empty($data['id'])) &&
+        (isset($data['nome']) || isset($data['numero']) || isset($data['arduino']))
+    ) {
         $id_sala = intval($data['id']);
 
         // verifica possível chave de 'nome'
@@ -65,22 +63,27 @@ if ($method == 'PUT') {
             $arduino_sala = null;
         }
 
-        $update_values = [];
-        $update_values['id'] = $id_sala;
-        $update_values['nome'] = $nome_sala;
-        $update_values['numero'] = $numero_sala;
-        $update_values['arduino'] = $arduino_sala;
-
-        $atualizacao = update_sala($conn, $update_values);
-        
-        if ($atualizacao) {
-            $response['status'] = "200 OK";
-            $response['message'] = "Sala atualizada com sucesso";
-            $response['data'] = $atualizacao;
-
+        // Verificar se já existe uma sala com o mesmo nome ou número no banco de dados.
+        if (sala_existe_update($conn, $id_sala, $nome_sala, $numero_sala)) {
+            $response['status'] = "400 Bad Request";
+            $response['message'] = "Sala com mesmo nome ou número já existe no banco de dados.";
         } else {
-            $response['status'] = "500 Internal Server Error";
-            $response['message'] = "Erro ao atualizar sala";
+            $update_values = [];
+            $update_values['id'] = $id_sala;
+            $update_values['nome'] = $nome_sala;
+            $update_values['numero'] = $numero_sala;
+            $update_values['arduino'] = $arduino_sala;
+
+            $atualizacao = update_sala($conn, $update_values);
+
+            if ($atualizacao) {
+                $response['status'] = "200 OK";
+                $response['message'] = "Sala atualizada com sucesso";
+                $response['data'] = $atualizacao;
+            } else {
+                $response['status'] = "500 Internal Server Error";
+                $response['message'] = "Erro ao atualizar sala";
+            }
         }
     } else {
         $response['status'] = "400 Bad Request";
@@ -91,7 +94,6 @@ if ($method == 'PUT') {
     $response['status'] = "400 Bad Request";
     $response['message'] = "Método da requisição inválido";
 }
-
 
 enviar_resposta:
 

@@ -46,20 +46,26 @@ if ($method == 'POST') {
             if (isset($data['nome']) && isset($data['numero']) && is_string($data['nome']) && is_string($data['numero'])) {
                 $nome_sala = trim($data['nome']); //Remove espaço no início e final de uma string
                 $numero_sala = trim($data['numero']);
-
-                if ($nova_sala = create_sala($conn, $nome_sala, $numero_sala)) {
-                    $response['status'] = "200 OK";
-                    $response['message'] = "Sala adicionada com sucesso";
-                    $response['data'] = [
-                        "id" => $nova_sala['ID_SALA'],
-                        "nome" => $nova_sala['NOME_SALA'],
-                        "numero" => $nova_sala['NUMERO_SALA'],
-                        "arduino" => null,
-                        "status" => null
-                    ];
+                
+                // Verificar se já existe uma sala com o mesmo nome e número no banco de dados
+                if (sala_existe($conn, $nome_sala, $numero_sala)) {
+                    $response['status'] = "400 Bad Request"; 
+                    $response['message'] = "Sala com mesmo nome e número já existe no banco de dados.";
                 } else {
-                    $response['status'] = "500 Internal Server Error";
-                    $response['message'] = "Erro ao criar a sala";
+                    if ($nova_sala = create_sala($conn, $nome_sala, $numero_sala)) {
+                        $response['status'] = "200 OK"; 
+                        $response['message'] = "Sala adicionada com sucesso";
+                        $response['data'] = [
+                            "id" => $nova_sala['ID_SALA'],
+                            "nome" => $nova_sala['NOME_SALA'],
+                            "numero" => $nova_sala['NUMERO_SALA'],
+                            "arduino" => null,
+                            "status" => null
+                        ];
+                    } else {
+                        $response['status'] = "500 Internal Server Error";
+                        $response['message'] = "Erro ao criar a sala";
+                    }
                 }
             } else {
                 $response['status'] = "400 Bad Request"; // requisição do cliente não está correta

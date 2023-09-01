@@ -249,4 +249,52 @@ function update_sala($conn, array $update_values) {
     }
 }
 
+/*****************************************************************************/
+
+function sala_existe($conn, $nome, $numero) {
+    $nome = mysqli_real_escape_string($conn, $nome);
+    $numero = mysqli_real_escape_string($conn, $numero);
+    
+    // Consulta SQL para verificar a existência da sala.
+    $query = "SELECT * FROM sala WHERE nome_sala = '$nome' AND numero_sala = '$numero'";
+    $result = mysqli_query($conn, $query);
+
+    if (!$result) {
+        return false;
+    }
+    
+    // Verifica se há algum resultado retornado
+    if (mysqli_num_rows($result) > 0) {
+        return true;  // Já existe uma sala com o mesmo nome e número
+    } else {
+        return false; // Não existe uma sala com o mesmo nome e número
+    }
+}
+
+
+
+/*****************************************************************************/
+
+function sala_existe_update($conn, $id, $nome, $numero) {
+    $id = intval($id);
+    $nome = mysqli_real_escape_string($conn, $nome);
+    $numero = mysqli_real_escape_string($conn, $numero);
+    
+    // Consulta SQL para verificar a existência da sala.
+    $query = "SELECT * FROM sala WHERE nome_sala = '$nome' AND numero_sala = '$numero' AND id_sala != $id";
+    $result = mysqli_query($conn, $query);
+
+    if (!$result) {
+        return false;
+    }
+    
+    // Verifica se há algum resultado retornado
+    if (mysqli_num_rows($result) > 0) {
+        return true; // Já existe uma sala com o mesmo nome e número.
+    } else {
+        return false; // Não existe uma sala com o mesmo nome e número.
+    }
+}
+
+
 ?>
