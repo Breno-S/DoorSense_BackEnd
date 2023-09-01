@@ -1,9 +1,10 @@
 <?php
 include_once '../../include/conexao.php';
 include_once '../../include/funcoes.php';
-require 'vendor/autoload.php'; // Certifique-se de incluir o autoload do Firebase JWT
+require '../../../vendor/autoload.php'; // Certifique-se de incluir o autoload do Firebase JWT
 
 use \Firebase\JWT\JWT;
+use \Firebase\JWT\Key;
 
 // Headers
 header("Access-Control-Allow-Origin: *");
@@ -20,8 +21,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method == 'POST') {
     // Verifica a presença do token de autorização
     $headers = getallheaders();
-    $authorizationHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
-
+    $authorizationHeader = isset($headers['authorization']) ? $headers['authorization'] : '';
+    
     // Verifica se o cabeçalho de autorização está no formato "Bearer <token>"
     list(, $token) = explode(' ', $authorizationHeader);
 
@@ -33,10 +34,10 @@ if ($method == 'POST') {
 
     // Chave secreta usada para assinar e verificar o token
     $key = 'arduino';
-
+    
     try {
         // Decodifica o token usando a chave secreta
-        $decoded = JWT::decode($token, $key);
+        $decoded = JWT::decode($token, new Key($key, 'HS256'));
 
         $json_data = file_get_contents('php://input');
         $data = json_decode($json_data, true);
