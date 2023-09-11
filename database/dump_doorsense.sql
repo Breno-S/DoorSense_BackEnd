@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 29/08/2023 às 21:58
+-- Tempo de geração: 11-Set-2023 às 21:49
 -- Versão do servidor: 10.4.28-MariaDB
--- Versão do PHP: 8.1.17
+-- versão do PHP: 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `admin`
+-- Estrutura da tabela `admin`
 --
 
 CREATE TABLE `admin` (
@@ -34,7 +34,7 @@ CREATE TABLE `admin` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Despejando dados para a tabela `admin`
+-- Extraindo dados da tabela `admin`
 --
 
 INSERT INTO `admin` (`ID_ADMIN`, `EMAIL_ADMIN`, `SENHA_ADMIN`) VALUES
@@ -43,28 +43,28 @@ INSERT INTO `admin` (`ID_ADMIN`, `EMAIL_ADMIN`, `SENHA_ADMIN`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `arduino`
+-- Estrutura da tabela `arduino`
 --
 
 CREATE TABLE `arduino` (
   `ID_ARDUINO` int(11) NOT NULL,
   `UNIQUE_ID` varchar(100) NOT NULL,
-  `STATUS_ARDUINO` enum('Ativo','Inativo') NOT NULL DEFAULT 'Ativo',
+  `STATUS_ARDUINO` enum('Ativo','Inativo') NOT NULL DEFAULT 'Inativo',
   `LAST_UPDATE` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Despejando dados para a tabela `arduino`
+-- Extraindo dados da tabela `arduino`
 --
 
 INSERT INTO `arduino` (`ID_ARDUINO`, `UNIQUE_ID`, `STATUS_ARDUINO`, `LAST_UPDATE`) VALUES
-(1, '00 11 22 33 44 55 66 77 88', 'Ativo', '2023-08-28 16:49:02'),
-(2, 'FF EE DD CC BB AA 00 11 22', 'Ativo', '2023-08-28 16:49:02');
+(1, '00 11 22 33 44 55 66 77 88', 'Ativo', '2023-08-28 19:49:02'),
+(2, 'FF EE DD CC BB AA 00 11 22', 'Ativo', '2023-08-28 19:49:02');
 
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `sala`
+-- Estrutura da tabela `sala`
 --
 
 CREATE TABLE `sala` (
@@ -75,7 +75,7 @@ CREATE TABLE `sala` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Despejando dados para a tabela `sala`
+-- Extraindo dados da tabela `sala`
 --
 
 INSERT INTO `sala` (`ID_SALA`, `NOME_SALA`, `NUMERO_SALA`, `FK_ARDUINO`) VALUES
@@ -86,25 +86,38 @@ INSERT INTO `sala` (`ID_SALA`, `NOME_SALA`, `NUMERO_SALA`, `FK_ARDUINO`) VALUES
 (5, 'Biblioteca', NULL, NULL);
 
 --
+-- Acionadores `sala`
+--
+DELIMITER $$
+CREATE TRIGGER `sala_nome_numero_check` BEFORE INSERT ON `sala` FOR EACH ROW BEGIN
+    IF NEW.NUMERO_SALA IS NULL AND EXISTS (SELECT 1 FROM SALA WHERE NOME_SALA = NEW.NOME_SALA AND NUMERO_SALA IS NULL) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Sala com mesmo nome e número já existe no banco de dados.';
+    END IF;
+END
+$$
+DELIMITER ;
+
+--
 -- Índices para tabelas despejadas
 --
 
 --
--- Índices de tabela `admin`
+-- Índices para tabela `admin`
 --
 ALTER TABLE `admin`
   ADD PRIMARY KEY (`ID_ADMIN`),
   ADD UNIQUE KEY `EMAIL_ADMIN` (`EMAIL_ADMIN`);
 
 --
--- Índices de tabela `arduino`
+-- Índices para tabela `arduino`
 --
 ALTER TABLE `arduino`
   ADD PRIMARY KEY (`ID_ARDUINO`),
   ADD UNIQUE KEY `UNIQUE_ID` (`UNIQUE_ID`);
 
 --
--- Índices de tabela `sala`
+-- Índices para tabela `sala`
 --
 ALTER TABLE `sala`
   ADD PRIMARY KEY (`ID_SALA`),
@@ -112,7 +125,7 @@ ALTER TABLE `sala`
   ADD UNIQUE KEY `UC_NOME_NUMERO` (`NOME_SALA`,`NUMERO_SALA`);
 
 --
--- AUTO_INCREMENT para tabelas despejadas
+-- AUTO_INCREMENT de tabelas despejadas
 --
 
 --
@@ -134,11 +147,11 @@ ALTER TABLE `sala`
   MODIFY `ID_SALA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- Restrições para tabelas despejadas
+-- Restrições para despejos de tabelas
 --
 
 --
--- Restrições para tabelas `sala`
+-- Limitadores para a tabela `sala`
 --
 ALTER TABLE `sala`
   ADD CONSTRAINT `sala_ibfk_1` FOREIGN KEY (`FK_ARDUINO`) REFERENCES `arduino` (`ID_ARDUINO`);

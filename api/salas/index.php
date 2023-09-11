@@ -56,8 +56,9 @@ if ($method == 'GET') {
                         "status" => $sala['STATUS_SALA']
                     ];
                 } else {
-                    $response['status'] = "400 Bad Request";
-                    $response['message'] = "Parâmetros inválidos";
+                    http_response_code(404);
+                    $response['status'] = "404 Not Found";
+                    $response['message'] = "Sala não encontrada";
                 }
             } else {
                 $response['status'] = "400 Bad Request";
