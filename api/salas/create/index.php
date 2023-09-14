@@ -19,12 +19,24 @@ $response = [];
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method == 'POST') {
-    // Verifica a presença do token de autorização
+    // Pega todos os headers do request
     $headers = getallheaders();
-    $authorizationHeader = isset($headers['authorization']) ? $headers['authorization'] : '';
+
+    // Verifica a presença do cabeçalho de autorização
+    if (isset($headers['authorization'])) {
+        $authorizationHeader = $headers['authorization'];
+    } else {
+        http_response_code(400);
+        echo json_encode(['status' => '400 Bad Request', 'message' => 'Cabeçalho de autorização ausente']);
+        exit;
+    }
     
     // Verifica se o cabeçalho de autorização está no formato "Bearer <token>"
-    list(, $token) = explode(' ', $authorizationHeader);
+    if (preg_match('/^Bearer [A-Za-z0-9\-._~+\/]+=*$/', $authorizationHeader)) {
+        list(, $token) = explode(' ', $authorizationHeader);
+    } else {
+        $token = false;
+    }
 
     if (!$token) {
         http_response_code(401);

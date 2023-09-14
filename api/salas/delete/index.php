@@ -19,12 +19,24 @@ $response = [];
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method == 'DELETE') {
-    // Verifica a presença do token de autorização
+    // Pega todos os headers do request
     $headers = getallheaders();
-    $authorizationHeader = isset($headers['authorization']) ? $headers['authorization'] : '';
 
-    // Verifica se está no formato "Bearer <token>"
-    list(, $token) = explode(' ', $authorizationHeader);
+    // Verifica a presença do cabeçalho de autorização
+    if (isset($headers['authorization'])) {
+        $authorizationHeader = $headers['authorization'];
+    } else {
+        http_response_code(400);
+        echo json_encode(['status' => '400 Bad Request', 'message' => 'Cabeçalho de autorização ausente']);
+        exit;
+    }
+    
+    // Verifica se o cabeçalho de autorização está no formato "Bearer <token>"
+    if (preg_match('/^Bearer [A-Za-z0-9\-._~+\/]+=*$/', $authorizationHeader)) {
+        list(, $token) = explode(' ', $authorizationHeader);
+    } else {
+        $token = false;
+    }
 
     if (!$token) {
         http_response_code(401);
@@ -51,10 +63,12 @@ if ($method == 'DELETE') {
                     $response['status'] = "200 OK";
                     $response['message'] = "Sala deletada com sucesso";
                 } else {
+                    http_response_code(500);
                     $response['status'] = "500 Internal Server Error"; // caso de erro interno.
                     $response['message'] = "Erro ao deletar sala: " . mysqli_error($conn);
                 }
             } else {
+                http_response_code(400);
                 $response['status'] = "400 Bad Request"; // caso a validação de entrada falhe.
                 $response['message'] = "ID da sala inválido";
             }
