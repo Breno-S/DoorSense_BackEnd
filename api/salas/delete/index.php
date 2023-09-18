@@ -12,6 +12,9 @@ header("Access-Control-Allow-Methods: DELETE");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
+// Parâmetros permitidos pelo endpoint
+$allowed_params = ["id"];
+
 // array associativo.
 $response = [];
 
@@ -35,10 +38,6 @@ if ($method == 'DELETE') {
     if (preg_match('/^Bearer [A-Za-z0-9\-._~+\/]+=*$/', $authorizationHeader)) {
         list(, $token) = explode(' ', $authorizationHeader);
     } else {
-        $token = false;
-    }
-
-    if (!$token) {
         http_response_code(401);
         echo json_encode(['status' => '401 Unauthorized', 'message' => 'Token de autorização ausente']);
         exit;
@@ -47,40 +46,70 @@ if ($method == 'DELETE') {
     // Chave secreta 
     $key = 'arduino';
 
-    try { 
-         // Decodifica o token usando a chave secreta
-         $decoded = JWT::decode($token, new Key($key, 'HS256'));
-
-
-        $json_data = file_get_contents('php://input');
-        $data = json_decode($json_data, true);
-
-        if ($data !== null && is_array($data)) { //Se são válidos e se são um array.
-            if (isset($data['id']) && is_numeric($data['id'])) { //se o 'id' está presente nos dados e se o valor associado a essa chave é um número válido.
-                $id_sala = intval($data['id']); 
-
-                if (delete_sala($conn, $id_sala)) {
-                    $response['status'] = "200 OK";
-                    $response['message'] = "Sala deletada com sucesso";
-                } else {
-                    http_response_code(500);
-                    $response['status'] = "500 Internal Server Error"; // caso de erro interno.
-                    $response['message'] = "Erro ao deletar sala: " . mysqli_error($conn);
-                }
-            } else {
-                http_response_code(400);
-                $response['status'] = "400 Bad Request"; // caso a validação de entrada falhe.
-                $response['message'] = "ID da sala inválido";
-            }
-        } else {
-            http_response_code(400);
-            $response['status'] = "400 Bad Request";
-            $response['message'] = "JSON inválido";
-        }
+    try {
+        // Decodifica o token usando a chave secreta
+        $decoded = JWT::decode($token, new Key($key, 'HS256'));
     } catch (Exception $e) {
         http_response_code(401);
         echo json_encode(['status' => '401 Unauthorized', 'message' => 'Acesso não autorizado: ' . $e->getMessage()]);
         exit;
+    } 
+
+    // Verifica se há um body na requisição
+    if ($json_data = file_get_contents('php://input')) {
+
+        // Verifica se o JSON é válido
+        if (!($data = json_decode($json_data, true))) {
+            http_response_code(400); 
+            $response['status'] = "400 Bad Request";
+            $response['message'] = "JSON inválido";
+            echo json_encode($response);
+            exit;
+        }
+
+        // Obtém todas as chaves do JSON do body
+        $body_params = array_keys($data);
+
+        // Verifica se há chaves inválidas na requisição
+        if (array_diff($body_params, $allowed_params)) {
+            http_response_code(400);
+            $response['status'] = "400 Bad Request";
+            $response['message'] = "Parâmetros desconhecidos na requisição";
+            echo json_encode($response);
+            exit;
+        }
+
+        if (isset($data['id'])) {
+
+            // Verifica se o valor da chave id é numérico
+            if (filter_var($data['id'], FILTER_VALIDATE_INT) === false ) {
+                http_response_code(400);
+                $response['status'] = "400 Bad Request";
+                $response['message'] = "Argumento inválido";
+                echo json_encode($response);
+                exit;
+            }
+            
+            $id_sala = $data['id']; 
+
+            if (delete_sala($conn, $id_sala)) {
+                $response['status'] = "200 OK";
+                $response['message'] = "Sala deletada com sucesso";
+            } else {
+                http_response_code(404);
+                $response['status'] = "404 Not Found";
+                $response['message'] = "Sala não existe";
+            }
+        } else {
+            // roda somente quando o id da sala for null
+            http_response_code(400);
+            $response['status'] = "400 Bad Request"; // caso a validação de entrada falhe.
+            $response['message'] = "ID da sala inválido";
+        }
+    } else {
+        http_response_code(400);
+        $response['status'] = "400 Bad Request";
+        $response['message'] = "Requisição sem body";
     }
 } else {
     http_response_code(405);

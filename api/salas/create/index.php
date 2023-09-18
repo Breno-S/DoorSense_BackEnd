@@ -85,10 +85,11 @@ if ($method == 'POST') {
             // Verifica se os parâmetros obrigatórios são strings
             if (is_string($data['nome']) && is_string($data['numero'])) {
                 $nome_sala = trim($data['nome']); //Remove espaço no início e final de uma string
-                $numero_sala = trim($data['numero']);
+                $numero_sala = ($data['numero'] === "") ? $numero_sala = null : $data['numero'];
                 
                 // Verificar se já existe uma sala com o mesmo nome e número no banco de dados
-                if (sala_existe($conn, $nome_sala, $numero_sala)) {
+                if (sala_existe_create($conn, $nome_sala, $numero_sala)) {
+                    http_response_code(400);
                     $response['status'] = "400 Bad Request"; 
                     $response['message'] = "Sala com mesmo nome e número já existe no banco de dados.";
                 } else {

@@ -211,9 +211,9 @@ function update_sala($conn, array $update_values) {
     }
 
     // verificacao de quais campos que serao atualizados
-    $nome_sala = empty($update_values['nome']) ?
+    $nome_sala = $update_values['nome'] === null ?
                     $row_sala_old['NOME_SALA'] : $update_values['nome'];
-    $numero_sala = empty($update_values['numero']) ?
+    $numero_sala = $update_values['numero'] === null ?
                       $row_sala_old['NUMERO_SALA'] : $update_values['numero'];
 
     // string de update
@@ -251,7 +251,7 @@ function update_sala($conn, array $update_values) {
 
 /*****************************************************************************/
 
-function sala_existe($conn, $nome, $numero) {
+function sala_existe_create($conn, $nome, $numero) {
     $nome = mysqli_real_escape_string($conn, $nome);
     $numero = mysqli_real_escape_string($conn, $numero);
     

@@ -12,6 +12,9 @@ header("Access-Control-Allow-Methods: PUT");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
+// Parâmetros permitidos pelo endpoint
+$allowed_params = ["id", "nome", "numero", "arduino"];
+
 // Response (deve ser um array associativo)
 $response = [];
 
@@ -36,10 +39,6 @@ if ($method == 'PUT') {
     if (preg_match('/^Bearer [A-Za-z0-9\-._~+\/]+=*$/', $authorizationHeader)) {
         list(, $token) = explode(' ', $authorizationHeader);
     } else {
-        $token = false;
-    }
-
-    if (!$token) {
         http_response_code(401);
         echo json_encode(['status' => '401 Unauthorized', 'message' => 'Token de autorização ausente']);
         exit;
@@ -51,20 +50,58 @@ if ($method == 'PUT') {
     try {
         // Decodifica o token usando a chave secreta
         $decoded = JWT::decode($token, new Key($key, 'HS256'));
+    } catch (Exception $e) {
+        http_response_code(401);
+        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Acesso não autorizado: ' . $e->getMessage()]);
+        exit;
+    }
 
-        $json_data = file_get_contents('php://input');
-        $data = json_decode($json_data, true);
+    // Verifica se há um body na requisição
+    if ($json_data = file_get_contents('php://input')) {
 
+        // Verifica se o JSON é válido
+        if (!($data = json_decode($json_data, true))) {
+            http_response_code(400); 
+            $response['status'] = "400 Bad Request";
+            $response['message'] = "JSON inválido";
+            echo json_encode($response);
+            exit;
+        }
+
+        // Obtém todas as chaves do JSON do body
+        $body_params = array_keys($data);
+
+        // Verifica se há chaves inválidas na requisição
+        if (array_diff($body_params, $allowed_params)) {
+            http_response_code(400);
+            $response['status'] = "400 Bad Request";
+            $response['message'] = "Parâmetros desconhecidos na requisição";
+            echo json_encode($response);
+            exit;
+        }
+
+
+        // Verificação inicial (existe id e mais algum parâmetro?)
         if (isset($data['id']) && (!empty($data['id'])) && (isset($data['nome'])
                                                         || isset($data['numero'])
                                                         || isset($data['arduino'])) ) {
-            $id_sala = intval($data['id']);
+            
+            // Verifica se o valor da chave id é numérico
+            if (filter_var($data['id'], FILTER_VALIDATE_INT) === false ) {
+                http_response_code(400);
+                $response['status'] = "400 Bad Request";
+                $response['message'] = "Argumento inválido";
+                echo json_encode($response);
+                exit;
+            }
+
+            $id_sala = $data['id'];
 
             // verifica possível chave de 'nome'
             if (isset($data['nome'])) {
                 if (empty($data['nome'])) {
                     $response['status'] = "400 Bad Request";
-                    $response['message'] = "Parâmetros inválidos";
+                    $response['message'] = "Argumento(s) inválido(s)";
                     goto enviar_resposta;
                 } else {
                     $nome_sala = $data['nome'];
@@ -75,7 +112,7 @@ if ($method == 'PUT') {
 
             // verifica possível chave de 'numero'
             if (isset($data['numero'])) {
-                if (empty($data['numero'])) {
+                if (empty($data['numero']) && !(is_string($data['numero']))) {
                     $response['status'] = "400 Bad Request";
                     $response['message'] = "Parâmetros inválidos";
                     goto enviar_resposta;
@@ -122,18 +159,15 @@ if ($method == 'PUT') {
                 }
             }
         } else {
+            http_response_code(400);
             $response['status'] = "400 Bad Request";
             $response['message'] = "Parâmetros inválidos";
         }
-    } catch (Exception $e) {
-        http_response_code(401);
-        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Acesso não autorizado: ' . $e->getMessage()]);
-        exit;
+    } else {
+        http_response_code(405);
+        $response['status'] = "405 Method Not Allowed";
+        $response['message'] = "Método da requisição inválido";
     }
-} else {
-    http_response_code(400);
-    $response['status'] = "400 Bad Request";
-    $response['message'] = "Método da requisição inválido";
 }
 
 enviar_resposta:
