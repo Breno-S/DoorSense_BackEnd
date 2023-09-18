@@ -12,6 +12,9 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
+// Parâmetros permitidos pelo endpoint
+$allowed_params = ["nome", "numero"];
+
 // Array associativo.
 $response = [];
 
@@ -35,10 +38,6 @@ if ($method == 'POST') {
     if (preg_match('/^Bearer [A-Za-z0-9\-._~+\/]+=*$/', $authorizationHeader)) {
         list(, $token) = explode(' ', $authorizationHeader);
     } else {
-        $token = false;
-    }
-
-    if (!$token) {
         http_response_code(401);
         echo json_encode(['status' => '401 Unauthorized', 'message' => 'Token de autorização ausente']);
         exit;
@@ -46,16 +45,45 @@ if ($method == 'POST') {
 
     // Chave secreta usada para assinar e verificar o token
     $key = 'arduino';
-    
+
     try {
         // Decodifica o token usando a chave secreta
         $decoded = JWT::decode($token, new Key($key, 'HS256'));
+    } catch (Exception $e) {
+        http_response_code(401);
+        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Acesso não autorizado: ' . $e->getMessage()]);
+        exit;
+    }
+    
+    // Verifica se há um body na requisição
+    if ($json_data = file_get_contents('php://input')) {
 
-        $json_data = file_get_contents('php://input');
-        $data = json_decode($json_data, true);
+        // Verifica se o JSON é válido
+        if (!($data = json_decode($json_data, true))) {
+            http_response_code(400); 
+            $response['status'] = "400 Bad Request";
+            $response['message'] = "JSON inválido";
+            echo json_encode($response);
+            exit;
+        }
 
-        if ($data !== null && is_array($data)) { //Se são válidos e se são um array.
-            if (isset($data['nome']) && isset($data['numero']) && is_string($data['nome']) && is_string($data['numero'])) {
+        // Obtém todas as chaves do JSON do body
+        $body_params = array_keys($data);
+
+        // Verifica se há chaves inválidas na requisição
+        if (array_diff($body_params, $allowed_params)) {
+            http_response_code(400);
+            $response['status'] = "400 Bad Request";
+            $response['message'] = "Parâmetros desconhecidos na requisição";
+            echo json_encode($response);
+            exit;
+        }
+
+        // Verifica se tem os parâmetros obrigatórios
+        if (isset($data['nome']) && isset($data['numero'])) {
+
+            // Verifica se os parâmetros obrigatórios são strings
+            if (is_string($data['nome']) && is_string($data['numero'])) {
                 $nome_sala = trim($data['nome']); //Remove espaço no início e final de uma string
                 $numero_sala = trim($data['numero']);
                 
@@ -80,17 +108,19 @@ if ($method == 'POST') {
                     }
                 }
             } else {
+                http_response_code(400);
                 $response['status'] = "400 Bad Request"; // requisição do cliente não está correta
-                $response['message'] = "Parâmetros inválidos";
+                $response['message'] = "Argumento inválido";
             }
         } else {
-            $response['status'] = "400 Bad Request";  // requisição do cliente não está correta
-            $response['message'] = "JSON inválido";
+            http_response_code(400);
+            $response['status'] = "400 Bad Request"; // requisição do cliente não está correta
+            $response['message'] = "Parâmetro obrigatório ausente";
         }
-    } catch (Exception $e) {
-        http_response_code(401);
-        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Acesso não autorizado: ' . $e->getMessage()]);
-        exit;
+    } else {
+        http_response_code(400);
+        $response['status'] = "400 Bad Request";  // requisição do cliente não está correta
+        $response['message'] = "Requisição sem body";
     }
 } else {
     http_response_code(405);

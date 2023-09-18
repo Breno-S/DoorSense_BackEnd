@@ -22,6 +22,7 @@ $response = [];
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method == 'GET') {
+
     // Pega todos os headers do request
     $headers = getallheaders();
 
@@ -57,11 +58,12 @@ if ($method == 'GET') {
 
     // Verifica se há um body na requisição
     if ($json_data = file_get_contents('php://input')) {
+
         // Verifica se o JSON é válido
         if (!($data = json_decode($json_data, true))) {
             http_response_code(400); 
             $response['status'] = "400 Bad Request";
-            $response['message'] = "Body mal estruturado";
+            $response['message'] = "JSON inválido";
             echo json_encode($response);
             exit;
         }
@@ -73,18 +75,19 @@ if ($method == 'GET') {
         if (array_diff($body_params, $allowed_params)) {
             http_response_code(400);
             $response['status'] = "400 Bad Request";
-            $response['message'] = "Parâmetros deconhecidos na requisição";
+            $response['message'] = "Parâmetros desconhecidos na requisição";
             echo json_encode($response);
             exit;
         }
         
-        // Obter sala específica
+        // Request com body -> Obter sala específica
         if (isset($data['id'])) {
+
             // Verifica se o valor da chave id é numérico
             if (filter_var($data['id'], FILTER_VALIDATE_INT) === false ) {
                 http_response_code(400);
                 $response['status'] = "400 Bad Request";
-                $response['message'] = "Argumento do id não é numérico";
+                $response['message'] = "Argumento inválido";
                 echo json_encode($response);
                 exit;
             }
@@ -113,7 +116,7 @@ if ($method == 'GET') {
             $response['message'] = "Argumento inválido";
         }
     } else {
-        // obter todas as salas
+        // Request sem body -> Obter sala específica
         if ($all_salas = get_all_salas($conn)) {
             $response['status'] = "200 OK";
             $response['message'] = "Todas as salas registradas";
