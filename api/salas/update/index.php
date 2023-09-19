@@ -168,10 +168,14 @@ if ($method == 'PUT') {
             $response['message'] = "Parâmetros inválidos";
         }
     } else {
-        http_response_code(405);
+        http_response_code(400);
+        $response['status'] = "405 Method Not Allowed";
+        $response['message'] = "Requisição sem body";
+    }
+} else {
+    http_response_code(405);
         $response['status'] = "405 Method Not Allowed";
         $response['message'] = "Método da requisição inválido";
-    }
 }
 
 enviar_resposta:
