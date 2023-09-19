@@ -207,14 +207,23 @@ function update_sala($conn, array $update_values) {
             $id_arduino = $row_sala_old['FK_ARDUINO'];
         }
     } else {
-        $id_arduino = $row_sala_old['FK_ARDUINO'];
+        if (is_string($update_values['arduino'])) {
+            $id_arduino = null;
+        } else {
+            $id_arduino = $row_sala_old['FK_ARDUINO'];
+        }
     }
 
     // verificacao de quais campos que serao atualizados
-    $nome_sala = $update_values['nome'] === null ?
-                    $row_sala_old['NOME_SALA'] : $update_values['nome'];
-    $numero_sala = $update_values['numero'] === null ?
-                      $row_sala_old['NUMERO_SALA'] : $update_values['numero'];
+    $nome_sala = $update_values['nome'] === null ? $row_sala_old['NOME_SALA'] : $update_values['nome'];
+    
+    if ($update_values['numero'] === null) {
+        $numero_sala = $row_sala_old['NUMERO_SALA'];
+    } elseif ($update_values['numero'] === "") {
+        $numero_sala = null;
+    } else {
+        $numero_sala = $update_values['numero'];
+    }
 
     // string de update
     $sql = "UPDATE sala SET nome_sala = ?, numero_sala = ?, fk_arduino = ? WHERE id_sala = ?";
@@ -252,22 +261,25 @@ function update_sala($conn, array $update_values) {
 /*****************************************************************************/
 
 function sala_existe_create($conn, $nome, $numero) {
-    $nome = mysqli_real_escape_string($conn, $nome);
-    $numero = mysqli_real_escape_string($conn, $numero);
-    
     // Consulta SQL para verificar a existência da sala.
-    $query = "SELECT * FROM sala WHERE nome_sala = '$nome' AND numero_sala = '$numero'";
-    $result = mysqli_query($conn, $query);
-
-    if (!$result) {
-        return false;
+    if ($numero === null) {
+        $sql = "SELECT * FROM sala WHERE nome_sala = ? AND numero_sala IS NULL";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "s", $nome);
+    } else {
+        $sql = "SELECT * FROM sala WHERE nome_sala = ? AND numero_sala = ?";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "ss", $nome, $numero);
     }
+
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
     
     // Verifica se há algum resultado retornado
     if (mysqli_num_rows($result) > 0) {
-        return true;  // Já existe uma sala com o mesmo nome e número
+        return true;  // Já existe uma sala com o mesmo nome e número (ou NULL)
     } else {
-        return false; // Não existe uma sala com o mesmo nome e número
+        return false; // Não existe uma sala com o mesmo nome e número (ou NULL)
     }
 }
 
@@ -276,17 +288,20 @@ function sala_existe_create($conn, $nome, $numero) {
 /*****************************************************************************/
 
 function sala_existe_update($conn, $id, $nome, $numero) {
-    $id = intval($id);
-    $nome = mysqli_real_escape_string($conn, $nome);
-    $numero = mysqli_real_escape_string($conn, $numero);
     
     // Consulta SQL para verificar a existência da sala.
-    $query = "SELECT * FROM sala WHERE nome_sala = '$nome' AND numero_sala = '$numero' AND id_sala != $id";
-    $result = mysqli_query($conn, $query);
-
-    if (!$result) {
-        return false;
+    if ($numero === "") {
+        $sql = "SELECT * FROM sala WHERE nome_sala = ? AND numero_sala IS NULL AND id_sala != ?";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "si", $nome, $id);
+    } else {
+        $sql = "SELECT * FROM sala WHERE nome_sala = ? AND numero_sala = ? AND id_sala != ?";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "ssi", $nome, $numero, $id);
     }
+
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
     
     // Verifica se há algum resultado retornado
     if (mysqli_num_rows($result) > 0) {

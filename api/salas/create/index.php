@@ -85,7 +85,7 @@ if ($method == 'POST') {
             // Verifica se os parâmetros obrigatórios são strings
             if (is_string($data['nome']) && is_string($data['numero'])) {
                 $nome_sala = trim($data['nome']); //Remove espaço no início e final de uma string
-                $numero_sala = ($data['numero'] === "") ? $numero_sala = null : $data['numero'];
+                $numero_sala = ($data['numero'] === "") ? null : $data['numero'];
                 
                 // Verificar se já existe uma sala com o mesmo nome e número no banco de dados
                 if (sala_existe_create($conn, $nome_sala, $numero_sala)) {
@@ -111,7 +111,7 @@ if ($method == 'POST') {
             } else {
                 http_response_code(400);
                 $response['status'] = "400 Bad Request"; // requisição do cliente não está correta
-                $response['message'] = "Argumento inválido";
+                $response['message'] = "Argumento(s) inválido(s)";
             }
         } else {
             http_response_code(400);

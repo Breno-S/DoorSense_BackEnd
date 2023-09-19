@@ -90,7 +90,7 @@ if ($method == 'PUT') {
             if (filter_var($data['id'], FILTER_VALIDATE_INT) === false ) {
                 http_response_code(400);
                 $response['status'] = "400 Bad Request";
-                $response['message'] = "Argumento inválido";
+                $response['message'] = "Argumento(s) inválido(s)";
                 echo json_encode($response);
                 exit;
             }
@@ -113,8 +113,10 @@ if ($method == 'PUT') {
             // verifica possível chave de 'numero'
             if (isset($data['numero'])) {
                 if (empty($data['numero']) && !(is_string($data['numero']))) {
+                    // este bloco só executa quando ("numero": 0)
+                    http_response_code(400);
                     $response['status'] = "400 Bad Request";
-                    $response['message'] = "Parâmetros inválidos";
+                    $response['message'] = "Argumento(s) inválido(s)";
                     goto enviar_resposta;
                 } else {
                     $numero_sala = $data['numero'];
@@ -125,9 +127,11 @@ if ($method == 'PUT') {
 
             // verifica possível chave de 'arduino'
             if (isset($data['arduino'])) {
-                if (empty($data['arduino'])) {
+                if (empty($data['arduino']) && !(is_string($data['arduino']))) {
+                    // este bloco só executa quando ("arduino": 0)
+                    http_response_code(400);
                     $response['status'] = "400 Bad Request";
-                    $response['message'] = "Parâmetros inválidos";
+                    $response['message'] = "Argumento(s) inválidos(s)";
                     goto enviar_resposta;
                 } else {
                     $arduino_sala = $data['arduino'];
@@ -136,10 +140,10 @@ if ($method == 'PUT') {
                 $arduino_sala = null;
             }
 
-            // Verificar se já existe uma sala com o mesmo nome ou número no banco de dados.
+            // Verificar se já existe uma sala com o mesmo nome e número no banco de dados.
             if (sala_existe_update($conn, $id_sala, $nome_sala, $numero_sala)) {
                 $response['status'] = "400 Bad Request";
-                $response['message'] = "Sala com mesmo nome ou número já existe no banco de dados.";
+                $response['message'] = "Sala com mesmo nome e número já existe no banco de dados.";
             } else {
                 $update_values = [];
                 $update_values['id'] = $id_sala;
