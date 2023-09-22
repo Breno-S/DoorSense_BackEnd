@@ -8,7 +8,7 @@ use \Firebase\JWT\Key;
 
 // Headers
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -21,10 +21,25 @@ $response = [];
 // Verifique o método da requisição
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Se a requisição for uma solicitação OPTIONS, retorne os cabeçalhos permitidos
+if ($method === 'OPTIONS') {
+    header("HTTP/1.1 200 OK");
+    exit;
+}
+
 if ($method == 'GET') {
 
     // Pega todos os headers do request
     $headers = getallheaders();
+
+    // Transformar as chaves do $headers em lowercase
+    foreach ($headers as $key => $value) {
+        // Remover a chave original
+        unset($headers[$key]);
+    
+        // Adicionar a chave em minúsculas com o valor original
+        $headers[strtolower($key)] = $value;
+    }
 
     // Verifica a presença do cabeçalho de autorização
     if (isset($headers['authorization'])) {

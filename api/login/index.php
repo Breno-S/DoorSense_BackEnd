@@ -7,7 +7,7 @@ use \Firebase\JWT\JWT;
 
 // Headers
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -18,6 +18,12 @@ $allowed_params = ["username", "password"];
 $response = [];
 
 $method = $_SERVER['REQUEST_METHOD'];
+
+// Se a requisição for uma solicitação OPTIONS, retorne os cabeçalhos permitidos
+if ($method === 'OPTIONS') {
+    header("HTTP/1.1 200 OK");
+    exit();
+}
 
 if ($method == 'POST') {
     // Verifica se há um body na requisição
