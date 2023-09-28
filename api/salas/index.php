@@ -1,6 +1,6 @@
 <?php
-include_once '../include/conexao.php';
-include_once '../include/funcoes.php';
+include_once '../../include/conexao.php';
+include_once '../../include/funcoes.php';
 require '../../vendor/autoload.php';
 
 use \Firebase\JWT\JWT;
@@ -116,8 +116,8 @@ if ($method == 'GET') {
                     "id" => $sala['ID_SALA'],
                     "nome" => $sala['NOME_SALA'],
                     "numero" => $sala['NUMERO_SALA'],
-                    "arduino" => $sala['ARDUINO_SALA'],
-                    "status" => $sala['STATUS_SALA']
+                    "doorsense" => $sala['UNIQUE_ID'],
+                    "status" => $sala['STATUS_ARDUINO']
                 ];
             } else {
                 http_response_code(404);
@@ -131,7 +131,7 @@ if ($method == 'GET') {
             $response['message'] = "Argumento inválido";
         }
     } else {
-        // Request sem body -> Obter sala específica
+        // Request sem body -> Obter todas as salas
         if ($all_salas = get_all_salas($conn)) {
             $response['status'] = "200 OK";
             $response['message'] = "Todas as salas registradas";

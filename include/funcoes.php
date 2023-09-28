@@ -25,7 +25,14 @@ function login($conn, $username, $password) {
 
 function get_sala($conn, $id) {
     // String de consulta
-    $sql = "SELECT * FROM sala WHERE id_sala = ?";
+    $sql = "SELECT 
+            sala.ID_SALA,
+            sala.NOME_SALA,
+            sala.NUMERO_SALA,
+            arduino.UNIQUE_ID,
+            arduino.STATUS_ARDUINO
+            FROM sala LEFT JOIN arduino ON ID_ARDUINO = fk_arduino
+            WHERE id_sala = ?";
 
     // Preparação da consulta
     $stmt = mysqli_prepare($conn, $sql);
@@ -40,35 +47,7 @@ function get_sala($conn, $id) {
     // Verificar o número de linhas retornadas
     if (mysqli_num_rows($result) == 1) {
         $row_sala = mysqli_fetch_assoc($result);
-
-        $data = $row_sala;
-        
-        if (empty($row_sala['FK_ARDUINO'])) {
-
-            $data['ARDUINO_SALA'] = null;
-            $data['STATUS_SALA'] = null;
-
-        } else {
-            // String de consulta
-            $sql = "SELECT unique_id as ARDUINO_SALA,
-                    status_arduino as STATUS_SALA FROM arduino
-                    INNER JOIN sala ON id_arduino = fk_arduino
-                    WHERE fk_arduino = ?";
-            
-            // Preparação da consulta
-            $stmt = mysqli_prepare($conn, $sql);
-            mysqli_stmt_bind_param($stmt, 'i', $row_sala['FK_ARDUINO']);
-        
-            // Execução da consulta
-            mysqli_stmt_execute($stmt);
-
-            // Obter o resultado da consulta
-            $result = mysqli_stmt_get_result($stmt);
-            $row_arduino = mysqli_fetch_assoc($result);
-
-            $data = array_merge($data, $row_arduino);
-        }
-        return $data;
+        return $row_sala;
     }
 
     return false;
@@ -311,5 +290,102 @@ function sala_existe_update($conn, $id, $nome, $numero) {
     }
 }
 
+/*****************************************************************************/
+
+function get_doorsense($conn, $id) {
+    // String de consulta
+    $sql = "SELECT * FROM arduino WHERE id_arduino = ?";
+
+    // Preparação da consulta
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, 'i', $id);
+
+    // Execução da consulta
+    mysqli_stmt_execute($stmt);
+
+    // Obter o resultado da consulta
+    $result = mysqli_stmt_get_result($stmt);
+
+    // Verificar o número de linhas retornadas
+    if (mysqli_num_rows($result) == 1) {
+        $row_doorsense = mysqli_fetch_assoc($result);
+
+        $data = $row_doorsense;
+        
+        if (empty($row_doorsense['FK_ARDUINO'])) {
+
+            $data['ARDUINO_SALA'] = null;
+            $data['STATUS_SALA'] = null;
+
+        } else {
+            // String de consulta
+            $sql = "SELECT unique_id as ARDUINO_SALA,
+                    status_arduino as STATUS_SALA FROM arduino
+                    INNER JOIN sala ON id_arduino = fk_arduino
+                    WHERE fk_arduino = ?";
+            
+            // Preparação da consulta
+            $stmt = mysqli_prepare($conn, $sql);
+            mysqli_stmt_bind_param($stmt, 'i', $row_doorsense['FK_ARDUINO']);
+        
+            // Execução da consulta
+            mysqli_stmt_execute($stmt);
+
+            // Obter o resultado da consulta
+            $result = mysqli_stmt_get_result($stmt);
+            $row_arduino = mysqli_fetch_assoc($result);
+
+            $data = array_merge($data, $row_arduino);
+        }
+        return $data;
+    }
+
+    return false;
+}
+
+/*****************************************************************************/
+
+function get_all_doorsenses($conn) {
+    // String de consulta
+    $sql = "SELECT * FROM arduino";
+
+    // Execução da consulta
+    if ($result = mysqli_query($conn, $sql)) {
+        $result_set = [];
+            
+        // Agrupar os resultados
+        while ($row = mysqli_fetch_assoc($result)) {
+            
+            // Colocar os nomes das chaves no padrão vigente
+            $new_row["id"] = $row['ID_ARDUINO'];
+            $new_row["uniqueId"] = $row['UNIQUE_ID'];
+            $new_row["status"] = $row['STATUS_ARDUINO'];
+            $new_row["lastUpdate"] = $row['LAST_UPDATE'];
+            
+            $result_set[] = $new_row;
+        }
+
+        return $result_set;
+    }
+
+    return false;
+}
+
+/*****************************************************************************/
+
+function get_total_doorsenses($conn) {
+    // String de consulta
+    $sql = "SELECT COUNT(*) AS total FROM arduino";
+        
+    // Execução da consulta
+    if ($result = mysqli_query($conn, $sql)) {
+        $row = mysqli_fetch_assoc($result);
+        $total = $row['total'];
+
+        return $total;
+    }
+
+    return false;
+}
 
 ?>

@@ -1,5 +1,0 @@
-preparar as strings de consulta
-
-Arrumar a estrutura das pastas (separar os controllers)
-
-criar esqueleto de API

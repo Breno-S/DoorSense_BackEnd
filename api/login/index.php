@@ -1,6 +1,6 @@
 <?php
-include_once '../include/conexao.php';
-include_once '../include/funcoes.php';
+include_once '../../include/conexao.php';
+include_once '../../include/funcoes.php';
 require '../../vendor/autoload.php'; // autoload do Firebase JWT
 
 use \Firebase\JWT\JWT;
