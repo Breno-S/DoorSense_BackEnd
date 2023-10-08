@@ -71,66 +71,50 @@ if ($method == 'GET') {
         exit;
     } 
 
-    // Verifica se há um body na requisição
-    if ($json_data = file_get_contents('php://input')) {
+    // Obtem os parâmetros de query string
+    if (!empty($_GET)) {
+        $query_params = array_keys($_GET);
 
-        // Verifica se o JSON é válido
-        if (!($data = json_decode($json_data, true))) {
-            http_response_code(400); 
-            $response['status'] = "400 Bad Request";
-            $response['message'] = "JSON inválido";
-            echo json_encode($response);
-            exit;
-        }
-
-        // Obtém todas as chaves do JSON do body
-        $body_params = array_keys($data);
-
-        // Verifica se há chaves inválidas na requisição
-        if (array_diff($body_params, $allowed_params)) {
+        // Verifica se há chaves inválidas
+        if (array_diff($query_params, $allowed_params)) {
             http_response_code(400);
             $response['status'] = "400 Bad Request";
             $response['message'] = "Parâmetros desconhecidos na requisição";
             echo json_encode($response);
             exit;
         }
+    }
         
-        // Request com body -> Obter doorsense específico
-        if (isset($data['id'])) {
+    // Request com query -> Obter doorsense específico
+    if (isset($_GET['id'])) {
 
-            // Verifica se o valor da chave id é numérico
-            if (filter_var($data['id'], FILTER_VALIDATE_INT) === false ) {
-                http_response_code(400);
-                $response['status'] = "400 Bad Request";
-                $response['message'] = "Argumento inválido";
-                echo json_encode($response);
-                exit;
-            }
-
-            $id = $data['id'];
-
-            if ($sala = get_doorsense($conn, $id)) {
-                $response['status'] = "200 OK";
-                $response['message'] = "Doorsense encontrado";
-                $response['data'] = [
-                    "id" => $sala['ID_ARDUINO'],
-                    "uniqueId" => $sala['UNIQUE_ID'],
-                    "status" => $sala['STATUS_ARDUINO'],
-                    "lastUpdate" => $sala['LAST_UPDATE']
-                ];
-            } else {
-                http_response_code(404);
-                $response['status'] = "404 Not Found";
-                $response['message'] = "Doorsense não encontrado";
-            }
-        } else {
-            // roda quando o valor da chave id é null
+        // Verifica se o valor da chave id é numérico
+        if (filter_var($_GET['id'], FILTER_VALIDATE_INT) === false ) {
             http_response_code(400);
             $response['status'] = "400 Bad Request";
             $response['message'] = "Argumento inválido";
+            echo json_encode($response);
+            exit;
+        }
+
+        $id = $_GET['id'];
+
+        if ($sala = get_doorsense($conn, $id)) {
+            $response['status'] = "200 OK";
+            $response['message'] = "Doorsense encontrado";
+            $response['data'] = [
+                "id" => $sala['ID_ARDUINO'],
+                "uniqueId" => $sala['UNIQUE_ID'],
+                "status" => $sala['STATUS_ARDUINO'],
+                "lastUpdate" => $sala['LAST_UPDATE']
+            ];
+        } else {
+            http_response_code(404);
+            $response['status'] = "404 Not Found";
+            $response['message'] = "Doorsense não encontrado";
         }
     } else {
-        // Request sem body -> Obter todos os Doorsenses
+        // Request sem query -> Obter todos os Doorsenses
         if ($all_doorsenses = get_all_doorsenses($conn)) {
             $response['status'] = "200 OK";
             $response['message'] = "Todos os Doorsenses registrados";

@@ -71,67 +71,51 @@ if ($method == 'GET') {
         exit;
     } 
 
-    // Verifica se há um body na requisição
-    if ($json_data = file_get_contents('php://input')) {
+    // Obtem os parâmetros de query string
+    if (!empty($_GET)) {
+        $query_params = array_keys($_GET);
 
-        // Verifica se o JSON é válido
-        if (!($data = json_decode($json_data, true))) {
-            http_response_code(400); 
-            $response['status'] = "400 Bad Request";
-            $response['message'] = "JSON inválido";
-            echo json_encode($response);
-            exit;
-        }
-
-        // Obtém todas as chaves do JSON do body
-        $body_params = array_keys($data);
-
-        // Verifica se há chaves inválidas na requisição
-        if (array_diff($body_params, $allowed_params)) {
+        // Verifica se há chaves inválidas
+        if (array_diff($query_params, $allowed_params)) {
             http_response_code(400);
             $response['status'] = "400 Bad Request";
             $response['message'] = "Parâmetros desconhecidos na requisição";
             echo json_encode($response);
             exit;
         }
+    }
         
-        // Request com body -> Obter sala específica
-        if (isset($data['id'])) {
+    // Request com query -> Obter sala específica
+    if (isset($_GET['id'])) {
 
-            // Verifica se o valor da chave id é numérico
-            if (filter_var($data['id'], FILTER_VALIDATE_INT) === false ) {
-                http_response_code(400);
-                $response['status'] = "400 Bad Request";
-                $response['message'] = "Argumento inválido";
-                echo json_encode($response);
-                exit;
-            }
-
-            $id = $data['id'];
-
-            if ($sala = get_sala($conn, $id)) {
-                $response['status'] = "200 OK";
-                $response['message'] =   "Sala encontrada";
-                $response['data'] = [
-                    "id" => $sala['ID_SALA'],
-                    "nome" => $sala['NOME_SALA'],
-                    "numero" => $sala['NUMERO_SALA'],
-                    "doorsense" => $sala['UNIQUE_ID'],
-                    "status" => $sala['STATUS_ARDUINO']
-                ];
-            } else {
-                http_response_code(404);
-                $response['status'] = "404 Not Found";
-                $response['message'] = "Sala não encontrada";
-            }
-        } else {
-            // roda quando o valor da chave id é null
+        // Verifica se o valor da chave id é numérico
+        if (filter_var($_GET['id'], FILTER_VALIDATE_INT) === false ) {
             http_response_code(400);
             $response['status'] = "400 Bad Request";
             $response['message'] = "Argumento inválido";
+            echo json_encode($response);
+            exit;
+        }
+
+        $id = $_GET['id'];
+
+        if ($sala = get_sala($conn, $id)) {
+            $response['status'] = "200 OK";
+            $response['message'] =   "Sala encontrada";
+            $response['data'] = [
+                "id" => $sala['ID_SALA'],
+                "nome" => $sala['NOME_SALA'],
+                "numero" => $sala['NUMERO_SALA'],
+                "doorsense" => $sala['UNIQUE_ID'],
+                "status" => $sala['STATUS_ARDUINO']
+            ];
+        } else {
+            http_response_code(404);
+            $response['status'] = "404 Not Found";
+            $response['message'] = "Sala não encontrada";
         }
     } else {
-        // Request sem body -> Obter todas as salas
+        // Request sem query -> Obter todas as salas
         if ($all_salas = get_all_salas($conn)) {
             $response['status'] = "200 OK";
             $response['message'] = "Todas as salas registradas";
