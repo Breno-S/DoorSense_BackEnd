@@ -1,18 +1,19 @@
 <?php
-$host = getenv('DB_HOST');
-$username = getenv('DB_USER');
+$hostname = getenv('DB_HOST');
+$username = getenv('DB_USERNAME');
 $password = getenv('DB_PASSWORD');
 $database = getenv('DB_DATABASE');
 $port = getenv('DB_PORT');
+$ca_path = getenv('DB_CA_CERT_PATH');
 
 // Inicializar o objeto mysqli
 $conn = mysqli_init();
 
 // Configurações de SSL/TLS
-mysqli_ssl_set($conn, NULL, NULL, "C:\\Users\\breno\\Downloads\\DigiCertGlobalRootCA.crt.pem", NULL, NULL);
+mysqli_ssl_set($conn, NULL, NULL, $ca_path, NULL, NULL);
 
 // Estabelecer a conexão
-if (!mysqli_real_connect($conn, $host, $username, $password, $database, $port, NULL, MYSQLI_CLIENT_SSL_DONT_VERIFY_SERVER_CERT)) {
+if (!mysqli_real_connect($conn, $hostname, $username, $password, $database, $port)) {
     die("Conexão falhou: " . mysqli_connect_error());
 }
 ?>
