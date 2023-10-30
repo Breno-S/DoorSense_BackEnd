@@ -6,8 +6,16 @@ require '../../vendor/autoload.php';
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
+$allowedOrigin = getenv("ALLOWED_ORIGIN");
+
 // Headers
-header("Access-Control-Allow-Origin: " . getenv('API_ALLOW_ORIGIN'));
+// Verifique se o valor está presente e defina o cabeçalho Access-Control-Allow-Origin
+if ($allowedOrigin) {
+    header("Access-Control-Allow-Origin: " . $allowedOrigin);
+} else {
+    header("Access-Control-Allow-Origin: http://localhost:3000");
+}
+
 header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
