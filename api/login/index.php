@@ -5,8 +5,16 @@ require '../../vendor/autoload.php'; // autoload do Firebase JWT
 
 use \Firebase\JWT\JWT;
 
+$allowedOrigin = getenv("ALLOWED_ORIGIN");
+
 // Headers
-header("Access-Control-Allow-Origin: *");
+// Verifique se o valor está presente e defina o cabeçalho Access-Control-Allow-Origin
+if ($allowedOrigin) {
+    header("Access-Control-Allow-Origin: " . $allowedOrigin);
+} else {
+    header("Access-Control-Allow-Origin: http://localhost:3000");
+}
+
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
