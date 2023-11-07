@@ -1,7 +1,7 @@
 <?php
-include_once '../../include/conexao.php';
-include_once '../../include/funcoes.php';
-require '../../vendor/autoload.php';
+include_once '../../../include/conexao.php';
+include_once '../../../include/funcoes.php';
+require '../../../vendor/autoload.php';
 
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
@@ -24,7 +24,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
 // Parâmetros permitidos pelo endpoint
-$allowed_params = ["id"];
+$allowed_params = ["email"];
 
 // Response (deve ser um array associativo)
 $response = [];
@@ -39,11 +39,39 @@ if ($method === 'OPTIONS') {
 }
 
 if ($method == 'POST') {
-    $data = json_decode(file_get_contents("php://input"));
+    // Verifica se há um body na requisição
+    if (!($json_data = file_get_contents('php://input'))) {
+        http_response_code(400);
+        $response['status'] = "400 Bad Request";
+        $response['message'] = "Requisição sem body";
+        echo json_encode($response);
+        exit;
+    }
+    
+    // Verifica se o JSON é válido
+    if (!($data = json_decode($json_data, true))) {
+        http_response_code(400);
+        $response['status'] = "400 Bad Request";
+        $response['message'] = "Body mal estruturado";
+        echo json_encode($response);
+        exit;
+    }
 
-    if (isset($data->email)) {
+    // Obtém todas as chaves do JSON do body
+    $body_params = array_keys($data);
+
+    // Verifica se há chaves inválidas na requisição
+    if (array_diff($body_params, $allowed_params)) {
+        http_response_code(400);
+        $response['status'] = "400 Bad Request";
+        $response['message'] = "Parâmetros desconhecidos na requisição";
+        echo json_encode($response);
+        exit;
+    }
+
+    if (isset($data['email'])) {
         // Lógica para gerar o link de recuperação de senha
-        $link = 'Qual o Link?' . base64_encode($data->email);
+        $link = 'Qual o Link?' . base64_encode($data['email']);
 
         // Configuração e envio do e-mail
         $mail = new PHPMailer(true);
@@ -59,7 +87,7 @@ if ($method == 'POST') {
             $mail->Port = 587;
 
             $mail->setFrom('doorsenseteste@gmail.com', 'AcessoTech'); 
-            $mail->addAddress($data->email); 
+            $mail->addAddress($data['email']); 
 
             $mail->isHTML(true);
             $mail->Subject = 'Redefinição de senha';
