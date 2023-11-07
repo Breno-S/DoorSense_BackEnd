@@ -39,6 +39,48 @@ if ($method === 'OPTIONS') {
 }
 
 if ($method == 'POST') {
+    // Pega todos os headers do request
+    $headers = getallheaders();
+
+    // Transformar as chaves do $headers em lowercase
+    foreach ($headers as $key => $value) {
+        // Remover a chave original
+        unset($headers[$key]);
+    
+        // Adicionar a chave em minúsculas com o valor original
+        $headers[strtolower($key)] = $value;
+    }
+
+    // Verifica a presença do cabeçalho de autorização
+    if (isset($headers['authorization'])) {
+        $authorizationHeader = $headers['authorization'];
+    } else {
+        http_response_code(400);
+        echo json_encode(['status' => '400 Bad Request', 'message' => 'Cabeçalho de autorização ausente']);
+        exit;
+    }
+    
+    // Verifica se o cabeçalho de autorização está no formato "Bearer <token>"
+    if (preg_match('/^Bearer [A-Za-z0-9\-._~+\/]+=*$/', $authorizationHeader)) {
+        list(, $token) = explode(' ', $authorizationHeader);
+    } else {
+        http_response_code(401);
+        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Token de autorização ausente']);
+        exit;
+    }
+
+    // Chave secreta usada para assinar e verificar o token
+    $key = 'arduino';
+
+    try {
+        // Decodifica o token usando a chave secreta
+        $decoded = JWT::decode($token, new Key($key, 'HS256'));
+    } catch (Exception $e) {
+        http_response_code(401);
+        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Acesso não autorizado: ' . $e->getMessage()]);
+        exit;
+    }
+
     // Verifica se há um body na requisição
     if (!($json_data = file_get_contents('php://input'))) {
         http_response_code(400);
@@ -69,15 +111,16 @@ if ($method == 'POST') {
         exit;
     }
 
-    if (isset($data['email'])) {
+    // Verifica se o argumento é um email válido
+    if (filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
         // Lógica para gerar o link de recuperação de senha
         $link = 'Qual o Link?' . base64_encode($data['email']);
 
         // Configuração e envio do e-mail
-        $mail = new PHPMailer(true);
+        $mail = new PHPMailer();
 
         try {
-            $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+            // $mail->SMTPDebug = SMTP::DEBUG_SERVER; // descomente se quiser ler os logs
             $mail->CharSet = 'UTF-8';
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
@@ -106,7 +149,7 @@ if ($method == 'POST') {
     } else {
         http_response_code(400);
         $response['status'] = "400 Bad Request";
-        $response['message'] = "E-mail não fornecido no corpo da solicitação";
+        $response['message'] = "E-mail fornecido é inválido";
     }
 } else {
     http_response_code(405);
