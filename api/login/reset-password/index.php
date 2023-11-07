@@ -5,9 +5,6 @@ require '../../../vendor/autoload.php';
 
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
 
 $allowedOrigin = getenv("ALLOWED_ORIGIN");
 
@@ -19,17 +16,17 @@ if ($allowedOrigin) {
     header("Access-Control-Allow-Origin: http://localhost:3000");
 }
 
-header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Methods: PUT, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
 // Parâmetros permitidos pelo endpoint
-$allowed_params = ["email"];
+$allowed_params = ["new-password"];
 
 // Response (deve ser um array associativo)
 $response = [];
 
-// Verifique o método da requisição
+// Verifica o método da requisição
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Se a requisição for uma solicitação OPTIONS, retorne os cabeçalhos permitidos
@@ -38,7 +35,8 @@ if ($method === 'OPTIONS') {
     exit;
 }
 
-if ($method == 'POST') {
+// No código que recebe o JSON e faz a chamada da função update_sala:
+if ($method == 'PUT') {
     // Pega todos os headers do request
     $headers = getallheaders();
 
@@ -70,7 +68,7 @@ if ($method == 'POST') {
     }
 
     // Chave secreta usada para assinar e verificar o token
-    $key = 'arduino';
+    $key = 'senha';
 
     try {
         // Decodifica o token usando a chave secreta
@@ -82,80 +80,49 @@ if ($method == 'POST') {
     }
 
     // Verifica se há um body na requisição
-    if (!($json_data = file_get_contents('php://input'))) {
-        http_response_code(400);
-        $response['status'] = "400 Bad Request";
-        $response['message'] = "Requisição sem body";
-        echo json_encode($response);
-        exit;
-    }
-    
-    // Verifica se o JSON é válido
-    if (!($data = json_decode($json_data, true))) {
-        http_response_code(400);
-        $response['status'] = "400 Bad Request";
-        $response['message'] = "Body mal estruturado";
-        echo json_encode($response);
-        exit;
-    }
+    if ($json_data = file_get_contents('php://input')) {
 
-    // Obtém todas as chaves do JSON do body
-    $body_params = array_keys($data);
+        // Verifica se o JSON é válido
+        if (!($data = json_decode($json_data, true))) {
+            http_response_code(400); 
+            $response['status'] = "400 Bad Request";
+            $response['message'] = "JSON inválido";
+            echo json_encode($response);
+            exit;
+        }
 
-    // Verifica se há chaves inválidas na requisição
-    if (array_diff($body_params, $allowed_params)) {
-        http_response_code(400);
-        $response['status'] = "400 Bad Request";
-        $response['message'] = "Parâmetros desconhecidos na requisição";
-        echo json_encode($response);
-        exit;
-    }
+        // Obtém todas as chaves do JSON do body
+        $body_params = array_keys($data);
 
-    // Verifica se o argumento é um email válido
-    if (filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-        // Lógica para gerar o link de recuperação de senha
-        $link = 'Qual o Link?' . base64_encode($data['email']);
+        // Verifica se há chaves inválidas na requisição
+        if (array_diff($body_params, $allowed_params)) {
+            http_response_code(400);
+            $response['status'] = "400 Bad Request";
+            $response['message'] = "Parâmetros desconhecidos na requisição";
+            echo json_encode($response);
+            exit;
+        }
 
-        // Configuração e envio do e-mail
-        $mail = new PHPMailer();
+        $atualizacao = update_password($conn, $data['new-password']);
 
-        try {
-            // $mail->SMTPDebug = SMTP::DEBUG_SERVER; // descomente se quiser ler os logs
-            $mail->CharSet = 'UTF-8';
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'doorsenseteste@gmail.com'; 
-            $mail->Password = 'zvtj djjl prvm gzzm'; 
-            $mail->Port = 587;
-
-            $mail->setFrom('doorsenseteste@gmail.com', 'AcessoTech'); 
-            $mail->addAddress($data['email']); 
-
-            $mail->isHTML(true);
-            $mail->Subject = 'Redefinição de senha';
-            $mail->Body = 'Prezado(a),<br><br>Você solicitou a redefinição de senha.<br><br>Para continuar o processo de recuperação de senha, clique no link abaixo ou cole o endereço no seu navegador:<br><br><a href="' . $link . '">' . $link . '</a><br><br>Se você não solicitou essa alteração, nenhuma ação é necessária. Sua senha permanecerá a mesma até que você ative este código.<br><br>';
-            $mail->AltBody = 'Prezado(a),\n\nVocê solicitou a redefinição de senha.\n\nPara continuar o processo de recuperação de senha, clique no link abaixo ou cole o endereço no seu navegador:\n\n' . $link . '\n\nSe você não solicitou essa alteração, nenhuma ação é necessária. Sua senha permanecerá a mesma até que você ative este código.\n\n';
-
-            $mail->send();
-
+        if ($atualizacao) {
             $response['status'] = "200 OK";
-            $response['message'] = "E-mail de recuperação de senha enviado com sucesso";
-        } catch (Exception $e) {
-            http_response_code(500);
+            $response['message'] = "Senha atualizada com sucesso";
+        } else {
             $response['status'] = "500 Internal Server Error";
-            $response['message'] = "Erro no envio de e-mail: " . $e->getMessage();
+            $response['message'] = "Erro ao atualizar senha";
         }
     } else {
         http_response_code(400);
-        $response['status'] = "400 Bad Request";
-        $response['message'] = "E-mail fornecido é inválido";
+        $response['status'] = "405 Method Not Allowed";
+        $response['message'] = "Requisição sem body";
     }
 } else {
     http_response_code(405);
     $response['status'] = "405 Method Not Allowed";
     $response['message'] = "Método da requisição inválido";
 }
+
 // Resposta
 echo json_encode($response);
 
