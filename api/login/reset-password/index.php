@@ -1,7 +1,7 @@
 <?php
-include_once '../../include/conexao.php';
-include_once '../../include/funcoes.php';
-require '../../vendor/autoload.php';
+include_once '../../../include/conexao.php';
+include_once '../../../include/funcoes.php';
+require '../../../vendor/autoload.php';
 
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
@@ -24,7 +24,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
 // Parâmetros permitidos pelo endpoint
-$allowed_params = ["id"];
+$allowed_params = ["email"];
 
 // Response (deve ser um array associativo)
 $response = [];
@@ -39,17 +39,88 @@ if ($method === 'OPTIONS') {
 }
 
 if ($method == 'POST') {
-    $data = json_decode(file_get_contents("php://input"));
+    // Pega todos os headers do request
+    $headers = getallheaders();
 
-    if (isset($data->email)) {
+    // Transformar as chaves do $headers em lowercase
+    foreach ($headers as $key => $value) {
+        // Remover a chave original
+        unset($headers[$key]);
+    
+        // Adicionar a chave em minúsculas com o valor original
+        $headers[strtolower($key)] = $value;
+    }
+
+    // Verifica a presença do cabeçalho de autorização
+    if (isset($headers['authorization'])) {
+        $authorizationHeader = $headers['authorization'];
+    } else {
+        http_response_code(400);
+        echo json_encode(['status' => '400 Bad Request', 'message' => 'Cabeçalho de autorização ausente']);
+        exit;
+    }
+    
+    // Verifica se o cabeçalho de autorização está no formato "Bearer <token>"
+    if (preg_match('/^Bearer [A-Za-z0-9\-._~+\/]+=*$/', $authorizationHeader)) {
+        list(, $token) = explode(' ', $authorizationHeader);
+    } else {
+        http_response_code(401);
+        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Token de autorização ausente']);
+        exit;
+    }
+
+    // Chave secreta usada para assinar e verificar o token
+    $key = 'arduino';
+
+    try {
+        // Decodifica o token usando a chave secreta
+        $decoded = JWT::decode($token, new Key($key, 'HS256'));
+    } catch (Exception $e) {
+        http_response_code(401);
+        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Acesso não autorizado: ' . $e->getMessage()]);
+        exit;
+    }
+
+    // Verifica se há um body na requisição
+    if (!($json_data = file_get_contents('php://input'))) {
+        http_response_code(400);
+        $response['status'] = "400 Bad Request";
+        $response['message'] = "Requisição sem body";
+        echo json_encode($response);
+        exit;
+    }
+    
+    // Verifica se o JSON é válido
+    if (!($data = json_decode($json_data, true))) {
+        http_response_code(400);
+        $response['status'] = "400 Bad Request";
+        $response['message'] = "Body mal estruturado";
+        echo json_encode($response);
+        exit;
+    }
+
+    // Obtém todas as chaves do JSON do body
+    $body_params = array_keys($data);
+
+    // Verifica se há chaves inválidas na requisição
+    if (array_diff($body_params, $allowed_params)) {
+        http_response_code(400);
+        $response['status'] = "400 Bad Request";
+        $response['message'] = "Parâmetros desconhecidos na requisição";
+        echo json_encode($response);
+        exit;
+    }
+
+    // Verifica se o argumento é um email válido
+    if (filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
         // Lógica para gerar o link de recuperação de senha
-        $link = 'Qual o Link?' . base64_encode($data->email);
+        $link = 'Qual o Link?' . base64_encode($data['email']);
 
         // Configuração e envio do e-mail
-        $mail = new PHPMailer(true);
+        $mail = new PHPMailer();
 
         try {
-            $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+            // $mail->SMTPDebug = SMTP::DEBUG_SERVER; // descomente se quiser ler os logs
             $mail->CharSet = 'UTF-8';
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
@@ -59,7 +130,7 @@ if ($method == 'POST') {
             $mail->Port = 587;
 
             $mail->setFrom('doorsenseteste@gmail.com', 'AcessoTech'); 
-            $mail->addAddress($data->email); 
+            $mail->addAddress($data['email']); 
 
             $mail->isHTML(true);
             $mail->Subject = 'Redefinição de senha';
@@ -78,7 +149,7 @@ if ($method == 'POST') {
     } else {
         http_response_code(400);
         $response['status'] = "400 Bad Request";
-        $response['message'] = "E-mail não fornecido no corpo da solicitação";
+        $response['message'] = "E-mail fornecido é inválido";
     }
 } else {
     http_response_code(405);
