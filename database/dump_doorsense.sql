@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 11-Set-2023 às 21:49
--- Versão do servidor: 10.4.28-MariaDB
--- versão do PHP: 8.2.4
+-- Tempo de geração: 06-Nov-2023 às 23:43
+-- Versão do servidor: 10.4.27-MariaDB
+-- versão do PHP: 8.2.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -79,11 +79,20 @@ CREATE TABLE `sala` (
 --
 
 INSERT INTO `sala` (`ID_SALA`, `NOME_SALA`, `NUMERO_SALA`, `FK_ARDUINO`) VALUES
-(1, 'Laboratório de Informática', '1', 1),
-(2, 'Laboratório de Informática', '2', 2),
-(3, 'Laboratório de Informática', '3', NULL),
-(4, 'Laboratório de Informática', '4', NULL),
-(5, 'Biblioteca', NULL, NULL);
+(1, 'Laboratório de Informática', 'A1', 1),
+(2, 'Laboratório de Informática', 'A2', 2),
+(3, 'Laboratório de Informática', 'A3', NULL),
+(4, 'Laboratório de Informática', 'A4', NULL),
+(5, 'Laboratório de Informática', 'A5', NULL),
+(6, 'Laboratório de Informática', 'A6', NULL),
+(7, 'Laboratório de Redes', 'A7', NULL),
+(8, 'Sala de Aula', 'A8', NULL),
+(9, 'Laboratório de Informática', 'A9', NULL),
+(10, 'Sala de Aula', 'A10', NULL),
+(11, 'Laboratório de Informática', 'A11', NULL),
+(12, 'Biblioteca', NULL, NULL),
+(13, 'Depósito de TI', NULL, NULL),
+(14, 'Orientador de Prática Profissional / Coordenação de Estágios', NULL, NULL);
 
 --
 -- Acionadores `sala`
@@ -144,7 +153,7 @@ ALTER TABLE `arduino`
 -- AUTO_INCREMENT de tabela `sala`
 --
 ALTER TABLE `sala`
-  MODIFY `ID_SALA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `ID_SALA` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- Restrições para despejos de tabelas
