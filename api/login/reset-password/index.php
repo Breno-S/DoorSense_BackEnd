@@ -114,7 +114,7 @@ if ($method == 'PUT') {
         }
     } else {
         http_response_code(400);
-        $response['status'] = "405 Method Not Allowed";
+        $response['status'] = "400 Bad Request";
         $response['message'] = "Requisição sem body";
     }
 } else {
