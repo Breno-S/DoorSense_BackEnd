@@ -11,11 +11,6 @@ use PHPMailer\PHPMailer\Exception;
 
 $allowedOrigin = getenv("ALLOWED_ORIGIN");
 
-$sql = "SELECT * FROM admin";
-$result = mysqli_query($conn, $sql);
-$row = mysqli_fetch_assoc($result);
-$email = $row['EMAIL_ADMIN'];
-
 // Headers
 // Verifique se o valor está presente e defina o cabeçalho Access-Control-Allow-Origin
 if ($allowedOrigin) {
@@ -41,49 +36,13 @@ if ($method === 'OPTIONS') {
 }
 
 if ($method == 'POST') {
-    // Pega todos os headers do request
-    $headers = getallheaders();
+    // Obter o email do admin (que esqueceu a senha)
+    $sql = "SELECT * FROM admin";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+    $email = $row['EMAIL_ADMIN'];
 
-    // Transformar as chaves do $headers em lowercase
-    foreach ($headers as $key => $value) {
-        // Remover a chave original
-        unset($headers[$key]);
-    
-        // Adicionar a chave em minúsculas com o valor original
-        $headers[strtolower($key)] = $value;
-    }
-
-    // Verifica a presença do cabeçalho de autorização
-    if (isset($headers['authorization'])) {
-        $authorizationHeader = $headers['authorization'];
-    } else {
-        http_response_code(400);
-        echo json_encode(['status' => '400 Bad Request', 'message' => 'Cabeçalho de autorização ausente']);
-        exit;
-    }
-    
-    // Verifica se o cabeçalho de autorização está no formato "Bearer <token>"
-    if (preg_match('/^Bearer [A-Za-z0-9\-._~+\/]+=*$/', $authorizationHeader)) {
-        list(, $token) = explode(' ', $authorizationHeader);
-    } else {
-        http_response_code(401);
-        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Token de autorização ausente']);
-        exit;
-    }
-
-    // Chave secreta usada para assinar e verificar o token
-    $key = 'arduino';
-
-    try {
-        // Decodifica o token usando a chave secreta
-        $decoded = JWT::decode($token, new Key($key, 'HS256'));
-    } catch (Exception $e) {
-        http_response_code(401);
-        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Acesso não autorizado: ' . $e->getMessage()]);
-        exit;
-    }
-
-    // Verifica se o argumento é um email válido
+    // Verifica se o email é válido
     if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
          //token JWT
