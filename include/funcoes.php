@@ -388,4 +388,21 @@ function get_total_doorsenses($conn) {
     return false;
 }
 
+/*****************************************************************************/
+
+function update_password($conn, $new_password) {
+    $sql = "UPDATE admin SET SENHA_ADMIN = ?";
+
+    // Preparação da consulta
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, 's', $new_password);
+
+    // Execução da consulta
+    if (!mysqli_stmt_execute($stmt)) {
+        return false;
+    };
+
+    return true;
+}
+
 ?>
