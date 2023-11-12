@@ -15,6 +15,7 @@ if (!empty($hostname) &&
     !empty($port) &&
     !empty($ca_path) ) 
 {
+	echo "Pegou as variaveis";
     // Inicializar o objeto mysqli
     $conn = mysqli_init();
 
@@ -28,6 +29,7 @@ if (!empty($hostname) &&
 		echo "Deu certo!";
 	}
 } else {
+	echo "Não pegou as variaveis
     $conn = mysqli_connect("localhost", "root", "", "doorsense");
 }
 
