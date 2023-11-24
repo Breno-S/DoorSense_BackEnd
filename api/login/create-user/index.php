@@ -4,6 +4,7 @@ include_once '../../include/funcoes.php';
 require '../../vendor/autoload.php'; // autoload do Firebase JWT
 
 use \Firebase\JWT\JWT;
+use \Firebase\JWT\Key;
 
 $allowedOrigin = getenv("ALLOWED_ORIGIN");
 
@@ -34,6 +35,48 @@ if ($method === 'OPTIONS') {
 }
 
 if ($method == 'POST') {
+    // Pega todos os headers do request
+    $headers = getallheaders();
+
+    // Transformar as chaves do $headers em lowercase
+    foreach ($headers as $key => $value) {
+        // Remover a chave original
+        unset($headers[$key]);
+    
+        // Adicionar a chave em minúsculas com o valor original
+        $headers[strtolower($key)] = $value;
+    }
+
+    // Verifica a presença do cabeçalho de autorização
+    if (isset($headers['authorization'])) {
+        $authorizationHeader = $headers['authorization'];
+    } else {
+        http_response_code(400);
+        echo json_encode(['status' => '400 Bad Request', 'message' => 'Cabeçalho de autorização ausente']);
+        exit;
+    }
+    
+    // Verifica se o cabeçalho de autorização está no formato "Bearer <token>"
+    if (preg_match('/^Bearer [A-Za-z0-9\-._~+\/]+=*$/', $authorizationHeader)) {
+        list(, $token) = explode(' ', $authorizationHeader);
+    } else {
+        http_response_code(401);
+        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Token de autorização ausente']);
+        exit;
+    }
+
+    // Chave secreta usada para assinar e verificar o token
+    $key = 'NextJSSucks';
+
+    try {
+        // Decodifica o token usando a chave secreta
+        $decoded = JWT::decode($token, new Key($key, 'HS256'));
+    } catch (Exception $e) {
+        http_response_code(401);
+        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Acesso não autorizado: ' . $e->getMessage()]);
+        exit;
+    }
+
     // Verifica se há um body na requisição
     if (!($json_data = file_get_contents('php://input'))) {
         http_response_code(400);
@@ -68,58 +111,11 @@ if ($method == 'POST') {
         $username = $data['username'];
         $password = $data['password'];
 
-        if (login($conn, $username, $password)) {
-            // First Access
-            if( $username == 'admin' && $password  == 'admin'){
-                //ticket JWT
-                $key = 'NextJSSucks';
-                $ticketId = base64_encode(random_bytes(32));
-                $issuedAt = time();
-                $expire = $issuedAt + 600; // 10 minutos de validade
-
-                //criação do ticket
-                $ticketData = [
-                    'iat'  => $issuedAt,
-                    'jti'  => $ticketId,
-                    'exp'  => $expire,
-                    'data' => [
-                        'username' => $username
-                    ]
-                ];
-
-                $ticket = JWT::encode($ticketData, $key, 'HS256');
-
-                $response = [
-                    'status' => "200 OK",
-                    'message' => "Login realizado com sucesso / Crie Usuário",
-                    'ticket' => $ticket
-                ];
-            } else {
-                //token JWT
-                $key = 'arduino';
-                $tokenId = base64_encode(random_bytes(32));
-                $issuedAt = time();
-                $expire = $issuedAt + 86400; // 1 dia de validade
-
-                //criação do token
-                $tokenData = [
-                    'iat'  => $issuedAt,
-                    'jti'  => $tokenId,
-                    'exp'  => $expire,
-                    'data' => [
-                        'username' => $username
-                    ]
-                ];
-
-                $token = JWT::encode($tokenData, $key, 'HS256');
-
-                $response = [
-                    'status' => "200 OK",
-                    'message' => "Login realizado com sucesso",
-                    'token' => $token
-                ];
-            }
-        
+        if (create_user($conn, $username, $password)) {
+            $response = [
+                'status' => "200 OK",
+                'message' => "Usuário salvo."
+            ];
         } else {
             http_response_code(401); 
             $response['status'] = "401 Unauthorized";
