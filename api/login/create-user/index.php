@@ -1,7 +1,7 @@
 <?php
-include_once '../../include/conexao.php';
-include_once '../../include/funcoes.php';
-require '../../vendor/autoload.php'; // autoload do Firebase JWT
+include_once '../../../include/conexao.php';
+include_once '../../../include/funcoes.php';
+require '../../../vendor/autoload.php'; // autoload do Firebase JWT
 
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
@@ -35,6 +35,19 @@ if ($method === 'OPTIONS') {
 }
 
 if ($method == 'POST') {
+    $sql = "SELECT * FROM admin";
+    $result = mysqli_query($conn, $sql);
+    $row = mysqli_fetch_assoc($result);
+    $current_user = $row['EMAIL_ADMIN'];
+
+    if ($current_user != "admin") {
+        http_response_code(403);
+        $response['status'] = "403 Forbidden";
+        $response['message'] = "Admin já foi cadastrado";
+        echo json_encode($response);
+        exit;
+    }
+
     // Pega todos os headers do request
     $headers = getallheaders();
 
@@ -111,7 +124,16 @@ if ($method == 'POST') {
         $username = $data['username'];
         $password = $data['password'];
 
+        if (!filter_var($username, FILTER_VALIDATE_EMAIL)) {
+            http_response_code(400);
+            $response['status'] = "400 Bad Request";
+            $response['message'] = "Informe um e-mail válido";
+            echo json_encode($response);
+            exit;
+        }
+
         if (create_user($conn, $username, $password)) {
+            http_response_code(200); 
             $response = [
                 'status' => "200 OK",
                 'message' => "Usuário salvo."
