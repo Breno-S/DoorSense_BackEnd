@@ -23,7 +23,7 @@ let bodyContent = JSON.stringify({
   "password": "admin"
 });
 
-let response = await fetch(baseURL + "api/login/", { 
+let response = await fetch(baseURL + "login/", { 
   method: "POST",
   body: bodyContent,
   headers: headersList
@@ -49,9 +49,55 @@ console.log(data);
 }
 ```
 
-## CRIAÇÃO DE USUÁRIO (ATIVADO NO PRIMEIRO ACESSO)
+## REGISTRAR USUÁRIO (ativado no primeiro acesso)
 
-⚙️ Em desenvolvimento…
+## Request `POST` `/login/register-user/` `Authorization: Bearer <JWT>` `Content-Type: application/json`
+
+### **Parâmetros:**
+
+- **`username`** string `required` - email do usuário que será admin do sistema.
+- **`password`** string `required` - senha do usuário que será admin do sistema.
+
+### Exemplo:
+
+```jsx
+let headersList = {
+ "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJI...",
+ "Content-Type": "application/json"
+}
+
+let bodyContent = JSON.stringify({
+  "username": "admin@example.com",
+  "password": "s7ven_ate_nin9"
+});
+
+let response = await fetch(baseURL + "login/register-user/", { 
+  method: "POST",
+  body: bodyContent,
+  headers: headersList
+});
+
+let data = await response.text();
+console.log(data);
+```
+
+> ❗ **ATENÇÃO:**
+>
+> O token que é enviado no cabeçalho `Authorization` deste endpoint deve ser o ticket recebido no endpoint de login ao fazer login com o usuário e senha padrão.
+
+## Response `200` `400` `403` `405` `500`
+
+- **`status`** string `required` - status da requisição.
+- **`message`** string `required` - mensagem descrevendo o status ou informando o que está sendo retornado.
+
+### Exemplo:
+
+```json
+{
+  "status": "200 OK",
+  "message": "Usuário salvo"
+}
+```
 
 # ALTERAR SENHA
 
@@ -68,7 +114,7 @@ let headersList = {
  "Content-Type": "application/json"
 }
 
-let response = await fetch(baseURL + "api/login/forgot-password/", { 
+let response = await fetch(baseURL + "login/forgot-password/", { 
   method: "POST",
   body: bodyContent,
   headers: headersList
@@ -112,7 +158,7 @@ let bodyContent = JSON.stringify({
   "new-password": "KGLW2024"
 });
 
-let response = await fetch(baseURL + "api/login/reset-password/", { 
+let response = await fetch(baseURL + "login/reset-password/", { 
   method: "PUT",
   body: bodyContent,
   headers: headersList
@@ -164,7 +210,7 @@ let bodyContent = JSON.stringify({
   "numero": "" // número é uma string vazia, indicando que a sala não terá número
 });
 
-let response = await fetch(baseURL + "api/salas/create/", { 
+let response = await fetch(baseURL + "salas/create/", { 
   method: "POST",
   body: bodyContent,
   headers: headersList
@@ -211,7 +257,7 @@ let headersList = {
  "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJI..."
 }
 
-let response = await fetch(baseURL + "api/salas/", { 
+let response = await fetch(baseURL + "salas/", { 
   method: "GET",
   headers: headersList
 });
@@ -293,7 +339,7 @@ let headersList = {
 }
 
 // A query string na URL define o parâmetro ID
-let response = await fetch(baseURL + "api/salas/?id=" + idSala, { 
+let response = await fetch(baseURL + "salas/?id=" + idSala, { 
   method: "GET",
   headers: headersList
 });
@@ -352,7 +398,7 @@ let bodyContent = JSON.stringify({
   "numero": "420"
 });
 
-let response = await fetch(baseURL + "api/salas/update/", { 
+let response = await fetch(baseURL + "salas/update/", { 
   method: "PUT",
   body: bodyContent,
   headers: headersList
@@ -404,7 +450,7 @@ let bodyContent = JSON.stringify({
   "id": 6
 });
 
-let response = await fetch(baseURL + "api/salas/delete/", { 
+let response = await fetch(baseURL + "salas/delete/", { 
   method: "DELETE",
   body: bodyContent,
   headers: headersList
@@ -445,7 +491,7 @@ let headersList = {
  "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJI..."
 }
 
-let response = await fetch(baseURL + "api/doorsenses/", { 
+let response = await fetch(baseURL + "doorsenses/", { 
   method: "GET",
   headers: headersList
 });
@@ -509,7 +555,7 @@ let headersList = {
  "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJI..."
 }
 
-let response = await fetch(baseURL + "api/doorsenses/?id=" + idDoorsense, { 
+let response = await fetch(baseURL + "doorsenses/?id=" + idDoorsense, { 
   method: "GET",
   headers: headersList
 });
