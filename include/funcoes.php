@@ -23,6 +23,23 @@ function login($conn, $username, $password) {
 
 /*****************************************************************************/
 
+function create_user($conn, $username, $password) {
+    // String de consulta
+    $sql = "UPDATE admin SET email_admin = ?, senha_admin = ?";
+
+    // Preparação da consulta
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, 'ss', $username, $password);
+
+    if (mysqli_stmt_execute($stmt)) {    
+        return true;
+    }
+
+    return false;
+}
+
+/*****************************************************************************/
+
 function get_sala($conn, $id) {
     // String de consulta
     $sql = "SELECT 

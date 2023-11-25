@@ -69,29 +69,57 @@ if ($method == 'POST') {
         $password = $data['password'];
 
         if (login($conn, $username, $password)) {
-            //token JWT
-            $key = 'arduino';
-            $tokenId = base64_encode(random_bytes(32));
-            $issuedAt = time();
-            $expire = $issuedAt + 86400; // 1 dia de validade
+            // First Access
+            if( $username == 'admin' && $password  == 'admin'){
+                //ticket JWT
+                $key = 'NextJSSucks';
+                $ticketId = base64_encode(random_bytes(32));
+                $issuedAt = time();
+                $expire = $issuedAt + 600; // 10 minutos de validade
 
-            //criação do token
-            $tokenData = [
-                'iat'  => $issuedAt,
-                'jti'  => $tokenId,
-                'exp'  => $expire,
-                'data' => [
-                    'username' => $username
-                ]
-            ];
+                //criação do ticket
+                $ticketData = [
+                    'iat'  => $issuedAt,
+                    'jti'  => $ticketId,
+                    'exp'  => $expire,
+                    'data' => [
+                        'username' => $username
+                    ]
+                ];
 
-            $token = JWT::encode($tokenData, $key, 'HS256');
+                $ticket = JWT::encode($ticketData, $key, 'HS256');
 
-            $response = [
-                'status' => "200 OK",
-                'message' => "Login realizado com sucesso",
-                'token' => $token
-            ];
+                $response = [
+                    'status' => "200 OK",
+                    'message' => "Login realizado com sucesso / Crie Usuário",
+                    'ticket' => $ticket
+                ];
+            } else {
+                //token JWT
+                $key = 'arduino';
+                $tokenId = base64_encode(random_bytes(32));
+                $issuedAt = time();
+                $expire = $issuedAt + 86400; // 1 dia de validade
+
+                //criação do token
+                $tokenData = [
+                    'iat'  => $issuedAt,
+                    'jti'  => $tokenId,
+                    'exp'  => $expire,
+                    'data' => [
+                        'username' => $username
+                    ]
+                ];
+
+                $token = JWT::encode($tokenData, $key, 'HS256');
+
+                $response = [
+                    'status' => "200 OK",
+                    'message' => "Login realizado com sucesso",
+                    'token' => $token
+                ];
+            }
+        
         } else {
             http_response_code(401); 
             $response['status'] = "401 Unauthorized";
@@ -103,8 +131,8 @@ if ($method == 'POST') {
         $response['message'] = "Parâmetro obrigatório ausente";
     }
 } else {
-    http_response_code(400);
-    $response['status'] = "400 Bad Request";
+    http_response_code(405);
+    $response['status'] = "405 Method Not Allowed";
     $response['message'] = "Método da requisição inválido";
 }
 
