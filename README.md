@@ -51,7 +51,7 @@ console.log(data);
 
 ## REGISTRAR USUÁRIO (ativado no primeiro acesso)
 
-## Request `POST` `/login/register-user/` `Authorization: Bearer <JWT>` `Content-Type: application/json`
+## Request `PUT` `/login/register-user/` `Authorization: Bearer <JWT>` `Content-Type: application/json`
 
 ### **Parâmetros:**
 
@@ -72,7 +72,7 @@ let bodyContent = JSON.stringify({
 });
 
 let response = await fetch(baseURL + "login/register-user/", { 
-  method: "POST",
+  method: "PUT",
   body: bodyContent,
   headers: headersList
 });
