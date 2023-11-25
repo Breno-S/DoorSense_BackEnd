@@ -136,7 +136,7 @@ if ($method == 'POST') {
             http_response_code(200); 
             $response = [
                 'status' => "200 OK",
-                'message' => "Usuário salvo."
+                'message' => "Usuário salvo"
             ];
         } else {
             http_response_code(401); 
@@ -149,8 +149,8 @@ if ($method == 'POST') {
         $response['message'] = "Parâmetro obrigatório ausente";
     }
 } else {
-    http_response_code(400);
-    $response['status'] = "400 Bad Request";
+    http_response_code(405);
+    $response['status'] = "405 Method Not Allowed";
     $response['message'] = "Método da requisição inválido";
 }
 
