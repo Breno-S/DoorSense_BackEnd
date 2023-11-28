@@ -49,7 +49,7 @@ INSERT INTO `admin` (`ID_ADMIN`, `EMAIL_ADMIN`, `SENHA_ADMIN`) VALUES
 CREATE TABLE `arduino` (
   `ID_ARDUINO` int(11) NOT NULL,
   `UNIQUE_ID` varchar(100) NOT NULL,
-  `STATUS_ARDUINO` enum('Ativo','Inativo') NOT NULL DEFAULT 'Inativo',
+  `STATUS_ARDUINO` enum('Ativo','Inativo', 'Pendente') NOT NULL DEFAULT 'Pendente',
   `LAST_UPDATE` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
