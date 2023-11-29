@@ -9,15 +9,6 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-
-if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-    $ip = $_SERVER['HTTP_CLIENT_IP'];
-} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-    $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-} else {
-    $ip = $_SERVER['REMOTE_ADDR'];
-}
-
 $allowedOrigin = getenv("ALLOWED_ORIGIN");
 
 // Headers
@@ -74,7 +65,7 @@ if ($method == 'POST') {
         $token = JWT::encode($tokenData, $key, 'HS256');
 
         // Link
-        $link = 'http://' . $ip . '/reset-password/' . $token;
+        $link = 'http://' . $allowedOrigin . '/reset-password/' . $token;
 
         // Configuração e envio do e-mail
         $mail = new PHPMailer();
