@@ -107,14 +107,16 @@ if ($method == 'GET') {
 
         $id = $_GET['id'];
 
-        if ($sala = get_doorsense($conn, $id)) {
+        if ($doorsense = get_doorsense($conn, $id)) {
             $response['status'] = "200 OK";
             $response['message'] = "Doorsense encontrado";
             $response['data'] = [
-                "id" => $sala['ID_ARDUINO'],
-                "uniqueId" => $sala['UNIQUE_ID'],
-                "status" => $sala['STATUS_ARDUINO'],
-                "lastUpdate" => $sala['LAST_UPDATE']
+                "id" => $doorsense['ID_ARDUINO'],
+                "uniqueId" => $doorsense['UNIQUE_ID'],
+                "status" => $doorsense['STATUS_ARDUINO'],
+                "lastUpdate" => $doorsense['LAST_UPDATE'],
+                "sala" => $doorsense['NOME_SALA'],
+                "numero" => $doorsense['NUMERO_SALA']
             ];
         } else {
             http_response_code(404);

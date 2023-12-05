@@ -65,7 +65,7 @@ if ($method == 'POST') {
         $token = JWT::encode($tokenData, $key, 'HS256');
 
         // Link
-        $link = 'https://example.com?t=' . $token;
+        $link = $allowedOrigin . '/reset-password/' . $token;
 
         // Configuração e envio do e-mail
         $mail = new PHPMailer();

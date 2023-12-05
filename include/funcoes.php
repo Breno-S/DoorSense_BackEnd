@@ -311,7 +311,7 @@ function sala_existe_update($conn, $id, $nome, $numero) {
 
 function get_doorsense($conn, $id) {
     // String de consulta
-    $sql = "SELECT * FROM arduino WHERE id_arduino = ?";
+    $sql = "SELECT * FROM arduino LEFT JOIN sala ON FK_ARDUINO = ID_ARDUINO WHERE ID_ARDUINO = ?";
 
     // Preparação da consulta
     $stmt = mysqli_prepare($conn, $sql);
@@ -329,31 +329,6 @@ function get_doorsense($conn, $id) {
 
         $data = $row_doorsense;
         
-        if (empty($row_doorsense['FK_ARDUINO'])) {
-
-            $data['ARDUINO_SALA'] = null;
-            $data['STATUS_SALA'] = null;
-
-        } else {
-            // String de consulta
-            $sql = "SELECT unique_id as ARDUINO_SALA,
-                    status_arduino as STATUS_SALA FROM arduino
-                    INNER JOIN sala ON id_arduino = fk_arduino
-                    WHERE fk_arduino = ?";
-            
-            // Preparação da consulta
-            $stmt = mysqli_prepare($conn, $sql);
-            mysqli_stmt_bind_param($stmt, 'i', $row_doorsense['FK_ARDUINO']);
-        
-            // Execução da consulta
-            mysqli_stmt_execute($stmt);
-
-            // Obter o resultado da consulta
-            $result = mysqli_stmt_get_result($stmt);
-            $row_arduino = mysqli_fetch_assoc($result);
-
-            $data = array_merge($data, $row_arduino);
-        }
         return $data;
     }
 
@@ -364,7 +339,7 @@ function get_doorsense($conn, $id) {
 
 function get_all_doorsenses($conn) {
     // String de consulta
-    $sql = "SELECT * FROM arduino";
+    $sql = "SELECT * FROM arduino LEFT JOIN sala ON FK_ARDUINO = ID_ARDUINO";
 
     // Execução da consulta
     if ($result = mysqli_query($conn, $sql)) {
@@ -378,6 +353,8 @@ function get_all_doorsenses($conn) {
             $new_row["uniqueId"] = $row['UNIQUE_ID'];
             $new_row["status"] = $row['STATUS_ARDUINO'];
             $new_row["lastUpdate"] = $row['LAST_UPDATE'];
+            $new_row["sala"] = !empty($row['NOME_SALA'])? $row['NOME_SALA'] : null;
+            $new_row["numero"] = !empty($row['NUMERO_SALA'])? $row['NUMERO_SALA'] : null;
             
             $result_set[] = $new_row;
         }
