@@ -364,7 +364,7 @@ function get_doorsense($conn, $id) {
 
 function get_all_doorsenses($conn) {
     // String de consulta
-    $sql = "SELECT * FROM arduino LEFT JOIN salas ON FK_ARDUINO = ID_ARDUINO";
+    $sql = "SELECT * FROM arduino LEFT JOIN sala ON FK_ARDUINO = ID_ARDUINO";
 
     // Execução da consulta
     if ($result = mysqli_query($conn, $sql)) {
