@@ -128,10 +128,8 @@ if ($method == 'GET') {
             $response['status'] = "200 OK";
             $response['message'] = "Todas as salas registradas";
 
-            $total = get_total_salas($conn);
-
             $response['data'] = [
-                "total" => $total,
+                "total" => count($all_salas),
                 "salas" => []
             ];
 

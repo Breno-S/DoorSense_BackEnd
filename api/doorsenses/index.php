@@ -109,7 +109,7 @@ if ($method == 'GET') {
 
         if ($doorsense = get_doorsense($conn, $id)) {
             $response['status'] = "200 OK";
-            $response['message'] = "Doorsense encontrado";
+            $response['message'] = "DoorSense encontrado";
             $response['data'] = [
                 "id" => $doorsense['ID_ARDUINO'],
                 "uniqueId" => $doorsense['UNIQUE_ID'],
@@ -121,18 +121,16 @@ if ($method == 'GET') {
         } else {
             http_response_code(404);
             $response['status'] = "404 Not Found";
-            $response['message'] = "Doorsense não encontrado";
+            $response['message'] = "DoorSense não encontrado";
         }
     } else {
         // Request sem query -> Obter todos os Doorsenses
         if ($all_doorsenses = get_all_doorsenses($conn)) {
             $response['status'] = "200 OK";
-            $response['message'] = "Todos os Doorsenses registrados";
-
-            $total = get_total_doorsenses($conn);
+            $response['message'] = "Todos os DoorSenses registrados";
 
             $response['data'] = [
-                "total" => $total,
+                "total" => count($all_doorsenses),
                 "doorsenses" => []
             ];
 
@@ -142,7 +140,7 @@ if ($method == 'GET') {
         } else {
             http_response_code(500);
             $response['status'] = "500 Internal Server";
-            $response['message'] = "Erro ao obter todos os Doorsenses";
+            $response['message'] = "Erro ao obter todos os DoorSenses";
         }
     }
 } else {

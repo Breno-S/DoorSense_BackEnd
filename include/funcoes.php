@@ -102,23 +102,6 @@ function get_all_salas($conn) {
 
 /*****************************************************************************/
 
-function get_total_salas($conn) {
-    // String de consulta
-    $sql = "SELECT COUNT(*) AS total FROM sala";
-        
-    // Execução da consulta
-    if ($result = mysqli_query($conn, $sql)) {
-        $row = mysqli_fetch_assoc($result);
-        $total = $row['total'];
-
-        return $total;
-    }
-
-    return false;
-}
-
-/*****************************************************************************/
-
 function create_sala($conn, $nome_sala, $numero_sala) {
     $numero_sala = empty($numero_sala) ? null : $numero_sala;
     
@@ -360,23 +343,6 @@ function get_all_doorsenses($conn) {
         }
 
         return $result_set;
-    }
-
-    return false;
-}
-
-/*****************************************************************************/
-
-function get_total_doorsenses($conn) {
-    // String de consulta
-    $sql = "SELECT COUNT(*) AS total FROM arduino";
-        
-    // Execução da consulta
-    if ($result = mysqli_query($conn, $sql)) {
-        $row = mysqli_fetch_assoc($result);
-        $total = $row['total'];
-
-        return $total;
     }
 
     return false;
