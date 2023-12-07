@@ -102,7 +102,7 @@ if ($method == 'PUT') {
             echo json_encode($response);
             exit;
         }
-
+        $encrypt = password_hash($data['new-password'], PASSWORD_DEFAULT);
         $atualizacao = update_password($conn, $data['new-password']);
 
         if ($atualizacao) {
