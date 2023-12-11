@@ -1,7 +1,7 @@
 <?php
-include_once '../../../include/conexao.php';
-include_once '../../../include/funcoes.php';
-require '../../../vendor/autoload.php';
+// include_once '../../../include/conexao.php';
+// include_once '../../../include/funcoes.php';
+// require '../../../vendor/autoload.php';
 
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
@@ -21,13 +21,17 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
 // Parâmetros permitidos pelo endpoint
-$allowed_params = ["id", "nome", "numero", "arduino"];
+$allowed_params = ["nome", "numero", "arduino"];
 
 // Response (deve ser um array associativo)
 $response = [];
 
 // Verifica o método da requisição
 $method = $_SERVER['REQUEST_METHOD'];
+
+if (isset($matches[1])) {
+    $pathID = $matches[1];
+}
 
 // Se a requisição for uma solicitação OPTIONS, retorne os cabeçalhos permitidos
 if ($method === 'OPTIONS') {
@@ -105,12 +109,12 @@ if ($method == 'PUT') {
 
 
         // Verificação inicial (existe id e mais algum parâmetro?)
-        if (isset($data['id']) && (!empty($data['id'])) && (isset($data['nome'])
+        if (isset($pathID) && (!empty($pathID)) && (isset($data['nome'])
                                                         || isset($data['numero'])
                                                         || isset($data['arduino'])) ) {
             
             // Verifica se o valor da chave id é numérico
-            if (filter_var($data['id'], FILTER_VALIDATE_INT) === false ) {
+            if (filter_var($pathID, FILTER_VALIDATE_INT) === false ) {
                 http_response_code(400);
                 $response['status'] = "400 Bad Request";
                 $response['message'] = "Argumento(s) inválido(s)";
@@ -118,7 +122,7 @@ if ($method == 'PUT') {
                 exit;
             }
 
-            $id_sala = $data['id'];
+            $id_sala = $pathID;
 
             // verifica possível chave de 'nome'
             if (isset($data['nome'])) {

@@ -1,7 +1,4 @@
 <?php
-include_once '../../../include/conexao.php';
-include_once '../../../include/funcoes.php';
-require '../../../vendor/autoload.php'; // autoload do Firebase JWT
 
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
@@ -26,12 +23,34 @@ $allowed_params = ["username", "password"];
 // Response
 $response = [];
 
-$method = $_SERVER['REQUEST_METHOD'];
+// Verifica a presença do cabeçalho de autorização
+if (isset($headers['authorization'])) {
+    $authorizationHeader = $headers['authorization'];
+} else {
+    http_response_code(400);
+    echo json_encode(['status' => '400 Bad Request', 'message' => 'Cabeçalho de autorização ausente']);
+    exit;
+}
 
-// Se a requisição for uma solicitação OPTIONS, retorne os cabeçalhos permitidos
-if ($method === 'OPTIONS') {
-    header("HTTP/1.1 200 OK");
-    exit();
+// Verifica se o cabeçalho de autorização está no formato "Bearer <token>"
+if (preg_match('/^Bearer [A-Za-z0-9\-._~+\/]+=*$/', $authorizationHeader)) {
+    list(, $token) = explode(' ', $authorizationHeader);
+} else {
+    http_response_code(401);
+    echo json_encode(['status' => '401 Unauthorized', 'message' => 'Token de autorização ausente']);
+    exit;
+}
+
+// Chave secreta usada para assinar e verificar o token
+$key = 'NextJSSucks';
+
+try {
+    // Decodifica o token usando a chave secreta
+    $decoded = JWT::decode($token, new Key($key, 'HS256'));
+} catch (Exception $e) {
+    http_response_code(401);
+    echo json_encode(['status' => '401 Unauthorized', 'message' => 'Acesso não autorizado: ' . $e->getMessage()]);
+    exit;
 }
 
 if ($method == 'PUT') {
@@ -45,48 +64,6 @@ if ($method == 'PUT') {
         $response['status'] = "403 Forbidden";
         $response['message'] = "Admin já foi cadastrado";
         echo json_encode($response);
-        exit;
-    }
-
-    // Pega todos os headers do request
-    $headers = getallheaders();
-
-    // Transformar as chaves do $headers em lowercase
-    foreach ($headers as $key => $value) {
-        // Remover a chave original
-        unset($headers[$key]);
-    
-        // Adicionar a chave em minúsculas com o valor original
-        $headers[strtolower($key)] = $value;
-    }
-
-    // Verifica a presença do cabeçalho de autorização
-    if (isset($headers['authorization'])) {
-        $authorizationHeader = $headers['authorization'];
-    } else {
-        http_response_code(400);
-        echo json_encode(['status' => '400 Bad Request', 'message' => 'Cabeçalho de autorização ausente']);
-        exit;
-    }
-    
-    // Verifica se o cabeçalho de autorização está no formato "Bearer <token>"
-    if (preg_match('/^Bearer [A-Za-z0-9\-._~+\/]+=*$/', $authorizationHeader)) {
-        list(, $token) = explode(' ', $authorizationHeader);
-    } else {
-        http_response_code(401);
-        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Token de autorização ausente']);
-        exit;
-    }
-
-    // Chave secreta usada para assinar e verificar o token
-    $key = 'NextJSSucks';
-
-    try {
-        // Decodifica o token usando a chave secreta
-        $decoded = JWT::decode($token, new Key($key, 'HS256'));
-    } catch (Exception $e) {
-        http_response_code(401);
-        echo json_encode(['status' => '401 Unauthorized', 'message' => 'Acesso não autorizado: ' . $e->getMessage()]);
         exit;
     }
 
