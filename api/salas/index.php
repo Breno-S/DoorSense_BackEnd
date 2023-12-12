@@ -124,7 +124,9 @@ if ($method == 'GET') {
         }
     } else {
         // Request sem query -> Obter todas as salas
-        if ($all_salas = get_all_salas($conn)) {
+        $all_salas = get_all_salas($conn);
+        
+        if ($all_salas || $all_salas === []) {
             $response['status'] = "200 OK";
             $response['message'] = "Todas as salas registradas";
 
